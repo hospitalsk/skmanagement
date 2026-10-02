@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบจัดการครุภัณฑ์โรงพยาบาล (Hospital Asset Management System)</title>
+  <!-- FontAwesome 6 for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- QRCode.js for generating QR Codes dynamically -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- JsBarcode for generating Barcodes -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Native Stylesheet for GitHub Pages -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       LOADING OVERLAY
+       ======================================================================== -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div id="loadingText" class="loading-text">กำลังประมวลผลข้อมูล...</div>
+  </div>
+
+  <!-- ========================================================================
+       TOAST NOTIFICATIONS
+       ======================================================================== -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================================================
+       CONFIRMATION MODAL
+       ======================================================================== -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmTitle"><i class="fa-solid fa-triangle-exclamation text-warning"></i> ยืนยันการดำเนินการ</h3>
+        <button class="btn-close-modal" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage" style="font-size: 0.95rem; color: var(--text-main);"></p>
+        <div id="confirmExtraInputGroup" style="margin-top: 14px; display: none;">
+          <label class="form-label" id="confirmInputLabel">พิมพ์ยืนยัน:</label>
+          <input type="text" id="confirmInputText" class="form-control" placeholder="พิมพ์ข้อความยืนยัน">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">ยกเลิก</button>
+        <button class="btn btn-danger" id="btnConfirmSubmit">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       LOGIN SCREEN
+       ======================================================================== -->
+  <div id="loginView" class="login-page">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fa-solid fa-hospital-user"></i>
+        </div>
+        <h2 id="loginSystemTitle">ระบบจัดการครุภัณฑ์โรงพยาบาล</h2>
+        <p id="loginOrgTitle">Hospital Asset Management System</p>
+      </div>
+      <div class="login-body">
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-regular fa-user"></i> ชื่อผู้ใช้งาน (Username)</label>
+            <input type="text" id="loginUsername" class="form-control" required placeholder="ระบุ username (เช่น admin หรือ demo)">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-key"></i> รหัสผ่าน (Password)</label>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 8px;">
+            <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
+          </button>
+        </form>
+
+        <div class="demo-account-hint">
+          <strong><i class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับประเมินระบบ:</strong>
+          <div style="margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="fillLoginForm('admin', '1234')">
+              <i class="fa-solid fa-user-shield"></i> เข้าด้วย Admin (1234)
+            </button>
+            <button type="button" class="btn btn-sm btn-warning" onclick="fillLoginForm('demo', '1234')">
+              <i class="fa-solid fa-flask"></i> เข้าด้วย Demo User (1234)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       APP MAIN CONTAINER (AFTER LOGIN)
+       ======================================================================== -->
+  <div id="appContainer" class="app-container" style="display: none;">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand-icon">
+          <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <div class="sidebar-brand-text">
+          <h1 id="brandSystemName">H-AMS</h1>
+          <span id="brandOrgName">โรงพยาบาล</span>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu" id="sidebarMenuList">
+        <li class="menu-category">ภาพรวม & ทะเบียน</li>
+        <li><a class="menu-item active" data-view="dashboard" onclick="switchView('dashboard')"><i class="fa-solid fa-chart-pie"></i> ภาพรวม (Dashboard)</a></li>
+        <li><a class="menu-item" data-view="assets" onclick="switchView('assets')"><i class="fa-solid fa-boxes-stacked"></i> ทะเบียนครุภัณฑ์</a></li>
+        <li><a class="menu-item" data-view="receive" onclick="switchView('receive')"><i class="fa-solid fa-file-circle-plus"></i> รับเข้าครุภัณฑ์</a></li>
+
+        <li class="menu-category">การเคลื่อนไหว & บริหาร</li>
+        <li><a class="menu-item" data-view="transfers" onclick="switchView('transfers')"><i class="fa-solid fa-arrows-split-up-and-left"></i> โอนย้าย/เปลี่ยนสถานที่</a></li>
+        <li><a class="menu-item" data-view="checkout" onclick="switchView('checkout')"><i class="fa-solid fa-hand-holding-hand"></i> เบิกจ่าย/รับคืน</a></li>
+        <li><a class="menu-item" data-view="disposals" onclick="switchView('disposals')"><i class="fa-solid fa-box-archive"></i> จำหน่ายครุภัณฑ์</a></li>
+
+        <li class="menu-category">การตรวจนับ & สอบเทียบ</li>
+        <li><a class="menu-item" data-view="audit-count" onclick="switchView('audit-count')"><i class="fa-solid fa-clipboard-check"></i> ตรวจนับครุภัณฑ์</a></li>
+        <li><a class="menu-item" data-view="inspections" onclick="switchView('inspections')"><i class="fa-solid fa-stethoscope"></i> ตรวจสภาพความพร้อมใช้</a></li>
+
+        <li class="menu-category">งานซ่อมบำรุง & สัญญา</li>
+        <li><a class="menu-item" data-view="pm" onclick="switchView('pm')"><i class="fa-solid fa-calendar-check"></i> PM / บำรุงรักษา</a></li>
+        <li><a class="menu-item" data-view="repairs" onclick="switchView('repairs')"><i class="fa-solid fa-wrench"></i> แจ้งซ่อม</a></li>
+        <li><a class="menu-item" data-view="repair-history" onclick="switchView('repair-history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการซ่อม</a></li>
+        <li><a class="menu-item" data-view="warranty" onclick="switchView('warranty')"><i class="fa-solid fa-shield-halved"></i> สัญญา & รับประกัน</a></li>
+        <li><a class="menu-item" data-view="attachments" onclick="switchView('attachments')"><i class="fa-solid fa-paperclip"></i> เอกสาร & ไฟล์แนบ</a></li>
+
+        <li class="menu-category">รายงาน & ระบบ</li>
+        <li><a class="menu-item" data-view="reports" onclick="switchView('reports')"><i class="fa-solid fa-file-excel"></i> รายงานและสถิติ</a></li>
+        <li><a class="menu-item admin-only" data-view="users" onclick="switchView('users')"><i class="fa-solid fa-users-gear"></i> จัดการผู้ใช้งาน</a></li>
+        <li><a class="menu-item admin-only" data-view="audit-logs" onclick="switchView('audit-logs')"><i class="fa-solid fa-list-check"></i> Audit Log</a></li>
+        <li><a class="menu-item admin-only" data-view="settings" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ & SQL</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="user-avatar" id="userAvatarText">AD</div>
+          <div class="user-info">
+            <div class="user-name" id="userDisplayName">ผู้ดูแลระบบ</div>
+            <div class="user-role" id="userRoleBadge">ADMIN</div>
+          </div>
+          <button class="btn btn-sm btn-outline" style="border: none; padding: 6px;" title="ออกจากระบบ" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket text-danger"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="btn-sidebar-toggle" onclick="toggleSidebar(true)">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-title">
+            <h2 id="currentPageTitle">ภาพรวม (Dashboard)</h2>
+            <p id="currentPageSub">ระบบบริหารจัดการและติดตามสินทรัพย์ทางการแพทย์</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div id="demoBadgeHeader" class="demo-indicator-badge" style="display: none;">
+            <i class="fa-solid fa-flask"></i> โหมดทดลอง (DEMO MODE)
+          </div>
+          <div class="header-date">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="headerThaiDate">วันนี้</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="app-view">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon primary"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ครุภัณฑ์ทั้งหมด</div>
+                <div class="stat-value" id="statTotalAssets">0</div>
+                <div class="stat-subtext" id="statTotalValue">มูลค่ารวม 0 บาท</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ใช้งานปกติ</div>
+                <div class="stat-value" id="statNormalAssets">0</div>
+                <div class="stat-subtext">ความพร้อมใช้งาน 100%</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon warning"><i class="fa-solid fa-wrench"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">อยู่ระหว่างส่งซ่อม</div>
+                <div class="stat-value" id="statInRepairAssets">0</div>
+                <div class="stat-subtext">รออะไหล่ / ช่างดูแล</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ชำรุด / รอจำหน่าย</div>
+                <div class="stat-value" id="statDamagedAssets">0</div>
+                <div class="stat-subtext">ต้องดำเนินการพิจารณา</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon info"><i class="fa-solid fa-calendar-check"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">PM ครบกำหนดเร็วๆ นี้</div>
+                <div class="stat-value" id="statPmDueSoon">0</div>
+                <div class="stat-subtext">ภายใน 30 วัน</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> รายการครุภัณฑ์ที่มีความเคลื่อนไหวล่าสุด</div>
+              <button class="btn btn-sm btn-outline" onclick="switchView('assets')">ดูทั้งหมด</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์</th>
+                      <th>แผนก/สถานที่</th>
+                      <th>ผู้รับผิดชอบ</th>
+                      <th>สภาพ</th>
+                      <th>สถานะ</th>
+                      <th>การจัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardRecentAssetsTable">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ASSETS VIEW (ทะเบียนครุภัณฑ์) -->
+        <section id="view-assets" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-boxes-stacked text-primary"></i> บัญชีทะเบียนครุภัณฑ์</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" onclick="openAssetModal()"><i class="fa-solid fa-plus"></i> เพิ่มครุภัณฑ์ใหม่</button>
+                <button class="btn btn-outline" onclick="exportAssetsCsv()"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-filter-bar">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="assetSearchInput" class="form-control" placeholder="ค้นหาเลขครุภัณฑ์, ชื่อ, Serial Number..." oninput="filterAssetsTable()">
+                </div>
+                <select id="filterAssetDept" class="form-control" style="width: auto; min-width: 180px;" onchange="filterAssetsTable()">
+                  <option value="">-- ทุกแผนก/หน่วยงาน --</option>
+                </select>
+                <select id="filterAssetStatus" class="form-control" style="width: auto; min-width: 150px;" onchange="filterAssetsTable()">
+                  <option value="">-- ทุกสถานะ --</option>
+                  <option value="ACTIVE">ปกติ (ACTIVE)</option>
+                  <option value="IN_REPAIR">ส่งซ่อม (IN_REPAIR)</option>
+                  <option value="IN_TRANSFER">โอนย้าย (IN_TRANSFER)</option>
+                  <option value="PENDING_DISPOSAL">รอจำหน่าย (PENDING)</option>
+                  <option value="DISPOSED">จำหน่ายแล้ว (DISPOSED)</option>
+                </select>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์ / ยี่ห้อ</th>
+                      <th>หมวดหมู่</th>
+                      <th>หน่วยงาน / สถานที่</th>
+                      <th>มูลค่า (บาท)</th>
+                      <th>สถานะ</th>
+                      <th>QR/Barcode</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="assetsTableBody">
+                    <tr><td colspan="8" class="text-center">กำลังโหลดรายการครุภัณฑ์...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. RECEIVE ASSET (รับเข้าครุภัณฑ์) -->
+        <section id="view-receive" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-file-circle-plus text-primary"></i> แบบฟอร์มตรวจรับและขึ้นทะเบียนครุภัณฑ์ใหม่</div>
+            </div>
+            <div class="card-body">
+              <form id="receiveAssetForm" onsubmit="handleReceiveAssetSubmit(event)">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">เลขครุภัณฑ์ (สร้างอัตโนมัติ)</label>
+                    <input type="text" id="rcvAssetCode" class="form-control" placeholder="ระบบจะสร้างให้อัตโนมัติ" readonly style="background: #f8fafc; font-weight: 700;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อครุภัณฑ์ *</label>
+                    <input type="text" id="rcvAssetName" class="form-control" required placeholder="เช่น เครื่องกระตุกหัวใจอัตโนมัติ (AED)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">หมวดหมู่ครุภัณฑ์ *</label>
+                    <select id="rcvCategoryID" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ยี่ห้อ (Brand)</label>
+                    <input type="text" id="rcvBrand" class="form-control" placeholder="เช่น Philips, Mindray, Nihon Kohden">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">รุ่น (Model)</label>
+                    <input type="text" id="rcvModel" class="form-control" placeholder="เช่น HeartStart FRx">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">หมายเลขเครื่อง (Serial Number)</label>
+                    <input type="text" id="rcvSerialNumber" class="form-control" placeholder="S/N ของผู้ผลิต">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">วิธีการได้มา *</label>
+                    <select id="rcvAcquisitionMethod" class="form-control" required>
+                      <option value="ซื้อ">จัดซื้อ</option>
+                      <option value="บริจาค">รับบริจาค</option>
+                      <option value="โอน">รับโอนจากหน่วยงานอื่น</option>
+                      <option value="รับจากโครงการ">รับมอบจากโครงการ</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">วันที่รับเข้า/ได้มา *</label>
+                    <input type="date" id="rcvAcquisitionDate" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ราคาจัดซื้อ (บาท) *</label>
+                    <input type="number" id="rcvAcquisitionCost" class="form-control" step="0.01" required placeholder="0.00">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">หน่วยงานที่ใช้งาน *</label>
+                    <select id="rcvDepartmentID" class="form-control" required onchange="loadLocationsForSelect('rcvDepartmentID', 'rcvLocationID')"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">สถานที่จัดวาง / ห้อง</label>
+                    <select id="rcvLocationID" class="form-control"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ผู้รับผิดชอบ / ผู้ดูแล</label>
+                    <input type="text" id="rcvCustodianName" class="form-control" placeholder="ชื่อ-นามสกุล ผู้ครอบครอง">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">คุณลักษณะเฉพาะ / รายละเอียดเพิ่มเติม</label>
+                  <textarea id="rcvSpecification" class="form-control" rows="3" placeholder="ระบุสเปก หรือรายละเอียดอุปกรณ์ประกอบ"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                  <button type="reset" class="btn btn-secondary">ล้างข้อมูล</button>
+                  <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกรับเข้าและขึ้นทะเบียน</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TRANSFERS VIEW (โอนย้าย) -->
+        <section id="view-transfers" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-arrows-split-up-and-left text-primary"></i> รายการโอนย้ายครุภัณฑ์ระหว่างหน่วยงาน</div>
+              <button class="btn btn-primary" onclick="openTransferModal()"><i class="fa-solid fa-plus"></i> บันทึกโอนย้ายใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่โอน</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>จากหน่วยงาน</th>
+                      <th>ไปยังหน่วยงาน</th>
+                      <th>เหตุผล</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transfersTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CHECKOUT / RETURN (เบิกจ่าย / รับคืน) -->
+        <section id="view-checkout" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-hand-holding-hand text-primary"></i> ทะเบียนเบิกจ่ายและรับคืนครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openCheckoutModal()"><i class="fa-solid fa-plus"></i> บันทึกการเบิก/คืน</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่ทำรายการ</th>
+                      <th>ประเภท</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ผู้เบิก/ผู้รับมอบ</th>
+                      <th>หน่วยงาน</th>
+                      <th>เหตุผล / บันทึก</th>
+                      <th>ผู้ทำรายการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="checkoutTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. AUDIT COUNT (ตรวจนับครุภัณฑ์) -->
+        <section id="view-audit-count" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clipboard-check text-primary"></i> รอบการตรวจนับครุภัณฑ์ประจำปี</div>
+              <button class="btn btn-primary" onclick="openInspectionSessionModal('AUDIT_COUNT')"><i class="fa-solid fa-plus"></i> เปิดรอบตรวจนับใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสรอบตรวจ</th>
+                      <th>หัวข้อรอบตรวจนับ</th>
+                      <th>ช่วงเวลา</th>
+                      <th>ผู้รับผิดชอบการตรวจ</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditCountTableBody">
+                    <tr><td colspan="6" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. INSPECTIONS (ตรวจสภาพ) -->
+        <section id="view-inspections" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-stethoscope text-primary"></i> การตรวจสภาพและความพร้อมใช้งานของเครื่องมือแพทย์</div>
+              <button class="btn btn-primary" onclick="openInspectionSessionModal('CONDITION')"><i class="fa-solid fa-plus"></i> บันทึกการตรวจสภาพ</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสตรวจ</th>
+                      <th>รายการตรวจ</th>
+                      <th>วันที่ตรวจ</th>
+                      <th>สถานะความปลอดภัย</th>
+                      <th>การทำงาน</th>
+                      <th>การสอบเทียบ</th>
+                      <th>ผลตรวจ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inspectionsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. PM / MAINTENANCE PLANS -->
+        <section id="view-pm" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-calendar-check text-primary"></i> แผนการบำรุงรักษาเชิงป้องกัน (Preventive Maintenance - PM)</div>
+              <button class="btn btn-primary" onclick="openPmPlanModal()"><i class="fa-solid fa-plus"></i> เพิ่มแผน PM</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสแผน</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ชื่องาน PM</th>
+                      <th>วันที่กำหนด</th>
+                      <th>ผู้รับผิดชอบ / Vendor</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pmPlansTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดแผน PM...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. REPAIRS (แจ้งซ่อม) -->
+        <section id="view-repairs" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-wrench text-primary"></i> ทะเบียนใบแจ้งซ่อมครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openRepairModal()"><i class="fa-solid fa-plus"></i> แจ้งซ่อมใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่ใบแจ้งซ่อม</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>วันที่แจ้ง</th>
+                      <th>อาการชำรุด</th>
+                      <th>ความเร่งด่วน</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="repairsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลแจ้งซ่อม...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. REPAIR HISTORY (ประวัติการซ่อม) -->
+        <section id="view-repair-history" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> ประวัติการซ่อมบำรุงและค่าใช้จ่ายสะสม</div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่ซ่อม</th>
+                      <th>เลขที่ซ่อม</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>อาการ</th>
+                      <th>ผลการซ่อม/อะไหล่</th>
+                      <th>ค่าใช้จ่าย (บาท)</th>
+                      <th>Downtime (ชม.)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="repairHistoryTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดประวัติการซ่อม...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. WARRANTY & CONTRACTS (สัญญาและการรับประกัน) -->
+        <section id="view-warranty" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-shield-halved text-primary"></i> สัญญาประกันและการบำรุงรักษา</div>
+              <button class="btn btn-primary" onclick="openWarrantyModal()"><i class="fa-solid fa-plus"></i> บันทึกสัญญาใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่สัญญา</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ประเภทสัญญา</th>
+                      <th>บริษัท/ผู้ให้บริการ</th>
+                      <th>วันเริ่มต้น - สิ้นสุด</th>
+                      <th>การติดต่อ</th>
+                      <th>สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="warrantyTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลสัญญา...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. DISPOSALS (จำหน่ายครุภัณฑ์) -->
+        <section id="view-disposals" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-box-archive text-primary"></i> ทะเบียนครุภัณฑ์จำหน่าย / ตัดบัญชี</div>
+              <button class="btn btn-danger" onclick="openDisposalModal()"><i class="fa-solid fa-plus"></i> บันทึกการจำหน่าย</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่จำหน่าย</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>วันที่จำหน่าย</th>
+                      <th>เหตุผล</th>
+                      <th>วิธีการ</th>
+                      <th>เลขที่อนุมัติ</th>
+                      <th>ผู้อนุมัติ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="disposalsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลการจำหน่าย...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. ATTACHMENTS (เอกสารและไฟล์แนบ) -->
+        <section id="view-attachments" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-paperclip text-primary"></i> จัดการเอกสารและไฟล์แนบครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openAttachmentModal()"><i class="fa-solid fa-upload"></i> อัปโหลดเอกสารใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ชื่อไฟล์เอกสาร</th>
+                      <th>ครุภัณฑ์อ้างอิง</th>
+                      <th>ประเภทเอกสาร</th>
+                      <th>คำอธิบาย</th>
+                      <th>ผู้อัปโหลด</th>
+                      <th>วันที่แนบ</th>
+                      <th>เปิดดู</th>
+                    </tr>
+                  </thead>
+                  <tbody id="attachmentsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดเอกสาร...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. REPORTS (รายงานและสถิติ) -->
+        <section id="view-reports" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-file-excel text-primary"></i> ศูนย์รายงานและสถิติครุภัณฑ์</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> พิมพ์รายงาน</button>
+                <button class="btn btn-success" onclick="exportReportDataCsv()"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-filter-bar">
+                <select id="reportTypeSelect" class="form-control" style="width: auto; min-width: 250px;" onchange="loadReportData()">
+                  <option value="ALL">1. รายงานทะเบียนครุภัณฑ์ทั้งหมด</option>
+                  <option value="ACTIVE">2. รายงานครุภัณฑ์สภาพปกติพร้อมใช้</option>
+                  <option value="REPAIR">3. รายงานครุภัณฑ์ชำรุด/ส่งซ่อม</option>
+                  <option value="DISPOSED">4. รายงานครุภัณฑ์จำหน่ายแล้ว</option>
+                  <option value="PM_DUE">5. รายงานแผน PM รอบถัดไป</option>
+                </select>
+                <select id="reportDeptFilter" class="form-control" style="width: auto;" onchange="loadReportData()">
+                  <option value="">-- ทุกแผนก --</option>
+                </select>
+              </div>
+
+              <div id="reportSummaryBox" style="background: #f0fdfa; border: 1px solid var(--primary-light); padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 16px; display: flex; gap: 24px; font-weight: 600;">
+                <div>จำนวนรายการ: <span id="repTotalCount" class="text-primary">0</span> รายการ</div>
+                <div>มูลค่าจัดซื้อรวม: <span id="repTotalCost" class="text-primary">0.00</span> บาท</div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table" id="reportResultTable">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์</th>
+                      <th>หมวดหมู่</th>
+                      <th>แผนก</th>
+                      <th>ราคาจัดซื้อ (บาท)</th>
+                      <th>สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportTableBody">
+                    <tr><td colspan="6" class="text-center">กรุณาเลือกประเภทรายงาน</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 15. USERS MANAGEMENT (จัดการผู้ใช้) -->
+        <section id="view-users" class="app-view admin-only" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-users-gear text-primary"></i> การจัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง</div>
+              <button class="btn btn-primary" onclick="openUserModal()"><i class="fa-solid fa-user-plus"></i> เพิ่มผู้ใช้ใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ชื่อผู้ใช้</th>
+                      <th>ชื่อ-นามสกุล</th>
+                      <th>บทบาท (Role)</th>
+                      <th>หน่วยงาน</th>
+                      <th>สถานะ</th>
+                      <th>ประเภทบัญชี</th>
+                      <th>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลผู้ใช้...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 16. AUDIT LOG (บันทึกประวัติการใช้งาน) -->
+        <section id="view-audit-logs" class="app-view admin-only" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-list-check text-primary"></i> บันทึกเหตุการณ์ระบบ (Audit Trail Log)</div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วัน-เวลา</th>
+                      <th>ผู้ใช้งาน</th>
+                      <th>บทบาท</th>
+                      <th>การดำเนินการ</th>
+                      <th>โมดูล</th>
+                      <th>รายละเอียด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditLogsTableBody">
+                    <tr><td colspan="6" class="text-center">กำลังโหลดบันทึก Audit...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 17. SETTINGS & SUPABASE SQL SCHEMA (ตั้งค่าระบบ & SQL) -->
+        <section id="view-settings" class="app-view admin-only" style="display: none;">
+          <!-- DEMO MODE SETTINGS -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-flask text-warning"></i> จัดการโหมดทดลอง (Demo Mode Management)</div>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 14px;">
+                โหมดทดลองใช้สำหรับสาธิตและทดสอบฟังก์ชัน ข้อมูลทดลองจะแยกออกจากข้อมูลจริงอย่างสมบูรณ์ (IsDemo = TRUE)
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-warning" onclick="toggleDemoModeSetting()"><i class="fa-solid fa-power-off"></i> <span id="btnDemoModeToggleText">เปิด/ปิด Demo</span></button>
+                <button class="btn btn-outline" onclick="triggerInitDemoData()"><i class="fa-solid fa-database"></i> สร้างชุดข้อมูลตัวอย่าง</button>
+                <button class="btn btn-danger" onclick="triggerClearDemoData()"><i class="fa-solid fa-trash-can"></i> ล้างข้อมูลทดลอง</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUPABASE POSTGRESQL SQL GENERATOR & COPIER -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-database text-primary"></i> โค้ด SQL สำหรับสร้างตารางใน Supabase</div>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 0.9rem; color: var(--text-muted);">
+                คัดลอกโค้ด SQL ด้านล่างนี้ไปวางที่ <strong>Supabase SQL Editor</strong> เพื่อสร้างตารางทั้ง 18 ตาราง, ดัชนี, การตั้งค่าเริ่มต้น, และบัญชีผู้ใช้เริ่มต้น
+              </p>
+              <div class="sql-box-wrapper">
+                <button class="btn-copy-sql" onclick="copySupabaseSql()"><i class="fa-regular fa-copy"></i> คัดลอก SQL ทั้งหมด</button>
+                <textarea id="supabaseSqlCodeBox" class="sql-code-area" readonly></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SYSTEM SETTINGS FORM -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-sliders text-primary"></i> การตั้งค่าข้อมูลหน่วยงานและระบบ</div>
+            </div>
+            <div class="card-body">
+              <form id="systemSettingsForm" onsubmit="handleSaveSettingsSubmit(event)">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ชื่อหน่วยงานเต็ม</label>
+                    <input type="text" id="setOrgName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อย่อหน่วยงาน</label>
+                    <input type="text" id="setOrgShortName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ประเภทหน่วยงาน</label>
+                    <input type="text" id="setOrgType" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ชื่อระบบ</label>
+                    <input type="text" id="setSystemName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อย่อระบบ</label>
+                    <input type="text" id="setSystemShortName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ปีงบประมาณ</label>
+                    <input type="text" id="setFiscalYear" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label class="form-label">คำนำหน้าเลขครุภัณฑ์</label>
+                    <input type="text" id="setAssetPrefix" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">คำนำหน้าเลขแจ้งซ่อม</label>
+                    <input type="text" id="setRepairPrefix" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เตือนประกันล่วงหน้า (วัน)</label>
+                    <input type="number" id="setWarrantyWarningDays" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Supabase Project URL</label>
+                    <input type="text" id="setSupabaseUrl" class="form-control" placeholder="https://xyz.supabase.co">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Supabase Anon Key / Service Role Key</label>
+                    <input type="password" id="setSupabaseKey" class="form-control" placeholder="ใส่ Key เพื่อเชื่อมต่อ Supabase จริง">
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                  <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่า</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: ASSET DETAILS & QR CODE / TIMELINE PREVIEW
+       ======================================================================== -->
+  <div id="assetDetailModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-circle-info text-primary"></i> ข้อมูลครุภัณฑ์และ QR Code</h3>
+        <button class="btn-close-modal" onclick="closeModal('assetDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; justify-content: center; background: #f8fafc; padding: 16px; border-radius: var(--radius-md);">
+          <div id="assetModalQrCode" style="padding: 8px; background: white; border-radius: 8px; box-shadow: var(--shadow-sm);"></div>
+          <div>
+            <svg id="assetModalBarcode"></svg>
+            <div style="font-size: 0.8rem; text-align: center; color: var(--text-muted); margin-top: 4px;">สแกนเพื่อเข้าถึงประวัติครุภัณฑ์ทันที</div>
+          </div>
+        </div>
+
+        <div id="assetDetailContent" style="font-size: 0.92rem; line-height: 1.8;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="printAssetCard()"><i class="fa-solid fa-print"></i> พิมพ์การ์ดครุภัณฑ์</button>
+        <button class="btn btn-secondary" onclick="closeModal('assetDetailModal')">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: REPAIR REQUEST FORM
+       ======================================================================== -->
+  <div id="repairModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wrench text-warning"></i> แบบฟอร์มแจ้งซ่อมครุภัณฑ์</h3>
+        <button class="btn-close-modal" onclick="closeModal('repairModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="repairForm" onsubmit="handleRepairSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ที่ต้องการแจ้งซ่อม *</label>
+            <select id="repAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ปัญหา / อาการชำรุด *</label>
+            <textarea id="repProblem" class="form-control" rows="3" required placeholder="อธิบายปัญหาที่พบ เช่น เครื่องไม่ติด, คลื่นสัญญาณมี Noise"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ระดับความเร่งด่วน</label>
+              <select id="repPriority" class="form-control">
+                <option value="NORMAL">ปกติ (NORMAL)</option>
+                <option value="LOW">ต่ำ (LOW)</option>
+                <option value="URGENT">ด่วน (URGENT)</option>
+                <option value="EMERGENCY">ฉุกเฉินวิกฤต (EMERGENCY)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ผู้รับผิดชอบงานซ่อม / ช่าง</label>
+              <input type="text" id="repAssignedTo" class="form-control" placeholder="เช่น นายสมเกียรติ ช่างซ่อมบำรุง">
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('repairModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> ส่งใบแจ้งซ่อม</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: TRANSFER FORM
+       ======================================================================== -->
+  <div id="transferModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-arrows-split-up-and-left text-primary"></i> แบบฟอร์มโอนย้ายครุภัณฑ์</h3>
+        <button class="btn-close-modal" onclick="closeModal('transferModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="transferForm" onsubmit="handleTransferSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ที่ต้องการโอน *</label>
+            <select id="trfAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ไปยังแผนก/หน่วยงาน *</label>
+              <select id="trfToDepartmentID" class="form-control" required onchange="loadLocationsForSelect('trfToDepartmentID', 'trfToLocationID')"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ไปยังสถานที่/ห้อง</label>
+              <select id="trfToLocationID" class="form-control"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ผู้รับมอบ / ผู้รับผิดชอบปลายทาง</label>
+            <input type="text" id="trfToResponsible" class="form-control" placeholder="ชื่อผู้รับผิดชอบใหม่">
+          </div>
+          <div class="form-group">
+            <label class="form-label">เหตุผลความจำเป็นในการโอน *</label>
+            <textarea id="trfReason" class="form-control" rows="2" required placeholder="เช่น ปรับเปลี่ยนการใช้งานตามความจำเป็นของแผนก"></textarea>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('transferModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกการโอนย้าย</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: PM PLAN FORM
+       ======================================================================== -->
+  <div id="pmModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-calendar-plus text-primary"></i> เพิ่มแผนบำรุงรักษาเชิงป้องกัน (PM)</h3>
+        <button class="btn-close-modal" onclick="closeModal('pmModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="pmForm" onsubmit="handlePmSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ *</label>
+            <select id="pmAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่องานบำรุงรักษา *</label>
+            <input type="text" id="pmPlanName" class="form-control" required placeholder="เช่น ตรวจสอบสอบเทียบและเปลี่ยนไส้กรองประจำ 6 เดือน">
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">วันที่กำหนดทำ PM *</label>
+              <input type="date" id="pmScheduledDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">รอบความถี่ (เดือน)</label>
+              <input type="number" id="pmFrequencyMonths" class="form-control" value="6" min="1">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ผู้รับผิดชอบ / ช่าง</label>
+              <input type="text" id="pmAssignedTo" class="form-control" placeholder="ชื่อช่างหรือทีมบำรุงรักษา">
+            </div>
+            <div class="form-group">
+              <label class="form-label">บริษัทผู้แทนจำหน่าย / Vendor</label>
+              <input type="text" id="pmVendor" class="form-control" placeholder="ชื่อบริษัท">
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('pmModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกแผน PM</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: USER FORM
+       ======================================================================== -->
+  <div id="userModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-plus text-primary"></i> ข้อมูลผู้ใช้งานระบบ</h3>
+        <button class="btn-close-modal" onclick="closeModal('userModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="userForm" onsubmit="handleUserSubmit(event)">
+          <input type="hidden" id="usrUserId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ชื่อผู้ใช้ (Username) *</label>
+              <input type="text" id="usrUsername" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">รหัสผ่าน (Password) *</label>
+              <input type="password" id="usrPassword" class="form-control" placeholder="กำหนดรหัสผ่าน">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ-นามสกุล *</label>
+            <input type="text" id="usrFullName" class="form-control" required>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">บทบาท (Role) *</label>
+              <select id="usrRole" class="form-control" required>
+                <option value="ADMIN">ADMIN (ผู้ดูแลระบบสูงสุด)</option>
+                <option value="ASSET_MANAGER">ASSET_MANAGER (ผู้จัดการงานครุภัณฑ์)</option>
+                <option value="MAINTENANCE">MAINTENANCE (ช่างซ่อมบำรุง)</option>
+                <option value="DEPARTMENT">DEPARTMENT (ผู้ใช้ประจำหน่วยงาน)</option>
+                <option value="VIEWER">VIEWER (ผู้ดูรายงานอย่างเดียว)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">หน่วยงาน/แผนก</label>
+              <select id="usrDepartmentID" class="form-control"></select>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกผู้ใช้</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Native JavaScript Modules for GitHub -->
+  <script src="supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

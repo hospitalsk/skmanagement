@@ -1,0 +1,4422 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบจัดการครุภัณฑ์โรงพยาบาล (Hospital Asset Management System)</title>
+  <!-- FontAwesome 6 for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- QRCode.js for generating QR Codes dynamically -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- JsBarcode for generating Barcodes -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+/* ==============================================================================
+   HOSPITAL ASSET MANAGEMENT SYSTEM - THEME & STYLES (BAI JAMJUREE / KANIT)
+   Hospital Clinical Teal & Crisp White UI
+   ============================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #0d9488;         /* Clinical Teal */
+  --primary-dark: #0f766e;
+  --primary-light: #ccfbf1;
+  --primary-hover: #115e59;
+  --secondary: #0284c7;       /* Medical Cyan / Sky */
+  --secondary-light: #e0f2fe;
+  --accent: #2563eb;
+  
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #0d9488;
+  
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+  --info: #0284c7;
+  --info-bg: #e0f2fe;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --sidebar-width: 270px;
+  --header-height: 68px;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Bai Jamjuree', 'Kanit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+/* ==============================================================================
+   LAYOUT & CONTAINER
+   ============================================================================== */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width);
+  background: #ffffff;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  transition: var(--transition);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+}
+
+.sidebar-header {
+  height: var(--header-height);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+}
+
+.sidebar-brand-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  overflow: hidden;
+}
+
+.sidebar-brand-text h1 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sidebar-brand-text span {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  display: block;
+  white-space: nowrap;
+}
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 10px;
+  list-style: none;
+}
+
+.menu-category {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  padding: 12px 12px 6px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.menu-item:hover {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.menu-item.active {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+}
+
+.menu-item i {
+  font-size: 1.15rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-color);
+  background: #f8fafc;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.user-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+/* MAIN CONTENT */
+.main-wrapper {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: var(--transition);
+}
+
+/* TOP HEADER */
+.top-header {
+  height: var(--header-height);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-sidebar-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.page-title h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.page-title p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.demo-indicator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+  animation: pulse-soft 2s infinite ease-in-out;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+
+.header-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* MAIN VIEW CONTENT CONTAINER */
+.content-body {
+  flex: 1;
+  padding: 24px 28px;
+}
+
+/* ==============================================================================
+   CARDS & STATS WIDGETS
+   ============================================================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.stat-icon.primary { background: #ccfbf1; color: #0f766e; }
+.stat-icon.success { background: #d1fae5; color: #065f46; }
+.stat-icon.warning { background: #fef3c7; color: #92400e; }
+.stat-icon.danger { background: #fee2e2; color: #991b1b; }
+.stat-icon.info { background: #e0f2fe; color: #0369a1; }
+.stat-icon.purple { background: #f3e8ff; color: #6b21a8; }
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-title {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.stat-subtext {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-body {
+  padding: 22px;
+}
+
+/* ==============================================================================
+   TABLES & DATA GRIDS
+   ============================================================================== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* BADGES & CHIPS */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef3c7; color: #b45309; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+.badge-info { background: #e0f2fe; color: #0369a1; }
+.badge-secondary { background: #f1f5f9; color: #475569; }
+.badge-purple { background: #f3e8ff; color: #7e22ce; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-success {
+  background: var(--success);
+  color: #ffffff;
+}
+.btn-success:hover {
+  background: #059669;
+}
+
+.btn-warning {
+  background: var(--warning);
+  color: #ffffff;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+.btn-outline:hover {
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+/* ==============================================================================
+   FORMS & INPUTS
+   ============================================================================== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.search-filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.search-input-wrapper {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+}
+
+.search-input-wrapper input {
+  padding-left: 36px;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+}
+
+/* ==============================================================================
+   MODALS & DIALOGS
+   ============================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  transform: translateY(20px) scale(0.98);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.modal-overlay.active .modal-container {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.btn-close-modal:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8fafc;
+}
+
+/* ==============================================================================
+   LOADING OVERLAY & TOAST NOTIFICATIONS
+   ============================================================================== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--primary-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+/* TOASTS */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 5px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  min-width: 300px;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-success { border-left-color: var(--success); }
+.toast-danger { border-left-color: var(--danger); }
+.toast-warning { border-left-color: var(--warning); }
+.toast-info { border-left-color: var(--info); }
+
+.toast-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.toast-success .toast-icon { color: var(--success); }
+.toast-danger .toast-icon { color: var(--danger); }
+.toast-warning .toast-icon { color: var(--warning); }
+.toast-info .toast-icon { color: var(--info); }
+
+.toast-content {
+  flex: 1;
+}
+.toast-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+.toast-message {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ==============================================================================
+   TIMELINE (ประวัติการซ่อม / โอนย้าย)
+   ============================================================================== */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border-color);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+.timeline-date {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.timeline-content {
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+/* ==============================================================================
+   SQL CODE BOX & COPY BUTTON (FOR SUPABASE TABLES)
+   ============================================================================== */
+.sql-box-wrapper {
+  position: relative;
+  background: #1e293b;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.sql-code-area {
+  width: 100%;
+  height: 280px;
+  background: transparent;
+  color: #38bdf8;
+  border: none;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+  outline: none;
+  line-height: 1.45;
+  white-space: pre;
+}
+
+.btn-copy-sql {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-copy-sql:hover {
+  background: var(--primary-dark);
+}
+
+/* ==============================================================================
+   EMPTY STATES
+   ============================================================================== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.empty-state i {
+  font-size: 3rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+.empty-state h3 {
+  font-size: 1.1rem;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+/* ==============================================================================
+   LOGIN SCREEN
+   ============================================================================== */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  border: 1px solid rgba(13, 148, 136, 0.15);
+}
+
+.login-header {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.login-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.login-header p {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.login-body {
+  padding: 28px 24px;
+}
+
+.demo-account-hint {
+  background: #f0fdfa;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: var(--primary-dark);
+}
+
+/* ==============================================================================
+   PRINT STYLES
+   ============================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .sidebar, .top-header, .btn, .search-filter-bar, .modal-footer, .no-print {
+    display: none !important;
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+  }
+  .content-body {
+    padding: 0 !important;
+  }
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+/* ==============================================================================
+   RESPONSIVE DESIGN (TABLET & MOBILE)
+   ============================================================================== */
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+  }
+  .main-wrapper {
+    margin-left: 0;
+  }
+  .btn-sidebar-toggle {
+    display: inline-flex;
+  }
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 95;
+    display: none;
+  }
+  .sidebar-backdrop.active {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-header {
+    padding: 0 16px;
+  }
+  .content-body {
+    padding: 16px;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-container {
+    max-height: 95vh;
+  }
+}
+</style>
+
+</head>
+<body>
+
+  <!-- ========================================================================
+       LOADING OVERLAY
+       ======================================================================== -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div id="loadingText" class="loading-text">กำลังประมวลผลข้อมูล...</div>
+  </div>
+
+  <!-- ========================================================================
+       TOAST NOTIFICATIONS
+       ======================================================================== -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================================================
+       CONFIRMATION MODAL
+       ======================================================================== -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmTitle"><i class="fa-solid fa-triangle-exclamation text-warning"></i> ยืนยันการดำเนินการ</h3>
+        <button class="btn-close-modal" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage" style="font-size: 0.95rem; color: var(--text-main);"></p>
+        <div id="confirmExtraInputGroup" style="margin-top: 14px; display: none;">
+          <label class="form-label" id="confirmInputLabel">พิมพ์ยืนยัน:</label>
+          <input type="text" id="confirmInputText" class="form-control" placeholder="พิมพ์ข้อความยืนยัน">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">ยกเลิก</button>
+        <button class="btn btn-danger" id="btnConfirmSubmit">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       LOGIN SCREEN
+       ======================================================================== -->
+  <div id="loginView" class="login-page">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fa-solid fa-hospital-user"></i>
+        </div>
+        <h2 id="loginSystemTitle">ระบบจัดการครุภัณฑ์โรงพยาบาล</h2>
+        <p id="loginOrgTitle">Hospital Asset Management System</p>
+      </div>
+      <div class="login-body">
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-regular fa-user"></i> ชื่อผู้ใช้งาน (Username)</label>
+            <input type="text" id="loginUsername" class="form-control" required placeholder="ระบุ username (เช่น admin หรือ demo)">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-key"></i> รหัสผ่าน (Password)</label>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 8px;">
+            <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
+          </button>
+        </form>
+
+        <div class="demo-account-hint">
+          <strong><i class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับประเมินระบบ:</strong>
+          <div style="margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="fillLoginForm('admin', '1234')">
+              <i class="fa-solid fa-user-shield"></i> เข้าด้วย Admin (1234)
+            </button>
+            <button type="button" class="btn btn-sm btn-warning" onclick="fillLoginForm('demo', '1234')">
+              <i class="fa-solid fa-flask"></i> เข้าด้วย Demo User (1234)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       APP MAIN CONTAINER (AFTER LOGIN)
+       ======================================================================== -->
+  <div id="appContainer" class="app-container" style="display: none;">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand-icon">
+          <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <div class="sidebar-brand-text">
+          <h1 id="brandSystemName">H-AMS</h1>
+          <span id="brandOrgName">โรงพยาบาล</span>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu" id="sidebarMenuList">
+        <li class="menu-category">ภาพรวม & ทะเบียน</li>
+        <li><a class="menu-item active" data-view="dashboard" onclick="switchView('dashboard')"><i class="fa-solid fa-chart-pie"></i> ภาพรวม (Dashboard)</a></li>
+        <li><a class="menu-item" data-view="assets" onclick="switchView('assets')"><i class="fa-solid fa-boxes-stacked"></i> ทะเบียนครุภัณฑ์</a></li>
+        <li><a class="menu-item" data-view="receive" onclick="switchView('receive')"><i class="fa-solid fa-file-circle-plus"></i> รับเข้าครุภัณฑ์</a></li>
+
+        <li class="menu-category">การเคลื่อนไหว & บริหาร</li>
+        <li><a class="menu-item" data-view="transfers" onclick="switchView('transfers')"><i class="fa-solid fa-arrows-split-up-and-left"></i> โอนย้าย/เปลี่ยนสถานที่</a></li>
+        <li><a class="menu-item" data-view="checkout" onclick="switchView('checkout')"><i class="fa-solid fa-hand-holding-hand"></i> เบิกจ่าย/รับคืน</a></li>
+        <li><a class="menu-item" data-view="disposals" onclick="switchView('disposals')"><i class="fa-solid fa-box-archive"></i> จำหน่ายครุภัณฑ์</a></li>
+
+        <li class="menu-category">การตรวจนับ & สอบเทียบ</li>
+        <li><a class="menu-item" data-view="audit-count" onclick="switchView('audit-count')"><i class="fa-solid fa-clipboard-check"></i> ตรวจนับครุภัณฑ์</a></li>
+        <li><a class="menu-item" data-view="inspections" onclick="switchView('inspections')"><i class="fa-solid fa-stethoscope"></i> ตรวจสภาพความพร้อมใช้</a></li>
+
+        <li class="menu-category">งานซ่อมบำรุง & สัญญา</li>
+        <li><a class="menu-item" data-view="pm" onclick="switchView('pm')"><i class="fa-solid fa-calendar-check"></i> PM / บำรุงรักษา</a></li>
+        <li><a class="menu-item" data-view="repairs" onclick="switchView('repairs')"><i class="fa-solid fa-wrench"></i> แจ้งซ่อม</a></li>
+        <li><a class="menu-item" data-view="repair-history" onclick="switchView('repair-history')"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการซ่อม</a></li>
+        <li><a class="menu-item" data-view="warranty" onclick="switchView('warranty')"><i class="fa-solid fa-shield-halved"></i> สัญญา & รับประกัน</a></li>
+        <li><a class="menu-item" data-view="attachments" onclick="switchView('attachments')"><i class="fa-solid fa-paperclip"></i> เอกสาร & ไฟล์แนบ</a></li>
+
+        <li class="menu-category">รายงาน & ระบบ</li>
+        <li><a class="menu-item" data-view="reports" onclick="switchView('reports')"><i class="fa-solid fa-file-excel"></i> รายงานและสถิติ</a></li>
+        <li><a class="menu-item admin-only" data-view="users" onclick="switchView('users')"><i class="fa-solid fa-users-gear"></i> จัดการผู้ใช้งาน</a></li>
+        <li><a class="menu-item admin-only" data-view="audit-logs" onclick="switchView('audit-logs')"><i class="fa-solid fa-list-check"></i> Audit Log</a></li>
+        <li><a class="menu-item admin-only" data-view="settings" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ & SQL</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="user-avatar" id="userAvatarText">AD</div>
+          <div class="user-info">
+            <div class="user-name" id="userDisplayName">ผู้ดูแลระบบ</div>
+            <div class="user-role" id="userRoleBadge">ADMIN</div>
+          </div>
+          <button class="btn btn-sm btn-outline" style="border: none; padding: 6px;" title="ออกจากระบบ" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket text-danger"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="btn-sidebar-toggle" onclick="toggleSidebar(true)">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-title">
+            <h2 id="currentPageTitle">ภาพรวม (Dashboard)</h2>
+            <p id="currentPageSub">ระบบบริหารจัดการและติดตามสินทรัพย์ทางการแพทย์</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div id="demoBadgeHeader" class="demo-indicator-badge" style="display: none;">
+            <i class="fa-solid fa-flask"></i> โหมดทดลอง (DEMO MODE)
+          </div>
+          <div class="header-date">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="headerThaiDate">วันนี้</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="app-view">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon primary"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ครุภัณฑ์ทั้งหมด</div>
+                <div class="stat-value" id="statTotalAssets">0</div>
+                <div class="stat-subtext" id="statTotalValue">มูลค่ารวม 0 บาท</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ใช้งานปกติ</div>
+                <div class="stat-value" id="statNormalAssets">0</div>
+                <div class="stat-subtext">ความพร้อมใช้งาน 100%</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon warning"><i class="fa-solid fa-wrench"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">อยู่ระหว่างส่งซ่อม</div>
+                <div class="stat-value" id="statInRepairAssets">0</div>
+                <div class="stat-subtext">รออะไหล่ / ช่างดูแล</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">ชำรุด / รอจำหน่าย</div>
+                <div class="stat-value" id="statDamagedAssets">0</div>
+                <div class="stat-subtext">ต้องดำเนินการพิจารณา</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon info"><i class="fa-solid fa-calendar-check"></i></div>
+              <div class="stat-info">
+                <div class="stat-title">PM ครบกำหนดเร็วๆ นี้</div>
+                <div class="stat-value" id="statPmDueSoon">0</div>
+                <div class="stat-subtext">ภายใน 30 วัน</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> รายการครุภัณฑ์ที่มีความเคลื่อนไหวล่าสุด</div>
+              <button class="btn btn-sm btn-outline" onclick="switchView('assets')">ดูทั้งหมด</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์</th>
+                      <th>แผนก/สถานที่</th>
+                      <th>ผู้รับผิดชอบ</th>
+                      <th>สภาพ</th>
+                      <th>สถานะ</th>
+                      <th>การจัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardRecentAssetsTable">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ASSETS VIEW (ทะเบียนครุภัณฑ์) -->
+        <section id="view-assets" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-boxes-stacked text-primary"></i> บัญชีทะเบียนครุภัณฑ์</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" onclick="openAssetModal()"><i class="fa-solid fa-plus"></i> เพิ่มครุภัณฑ์ใหม่</button>
+                <button class="btn btn-outline" onclick="exportAssetsCsv()"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-filter-bar">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="assetSearchInput" class="form-control" placeholder="ค้นหาเลขครุภัณฑ์, ชื่อ, Serial Number..." oninput="filterAssetsTable()">
+                </div>
+                <select id="filterAssetDept" class="form-control" style="width: auto; min-width: 180px;" onchange="filterAssetsTable()">
+                  <option value="">-- ทุกแผนก/หน่วยงาน --</option>
+                </select>
+                <select id="filterAssetStatus" class="form-control" style="width: auto; min-width: 150px;" onchange="filterAssetsTable()">
+                  <option value="">-- ทุกสถานะ --</option>
+                  <option value="ACTIVE">ปกติ (ACTIVE)</option>
+                  <option value="IN_REPAIR">ส่งซ่อม (IN_REPAIR)</option>
+                  <option value="IN_TRANSFER">โอนย้าย (IN_TRANSFER)</option>
+                  <option value="PENDING_DISPOSAL">รอจำหน่าย (PENDING)</option>
+                  <option value="DISPOSED">จำหน่ายแล้ว (DISPOSED)</option>
+                </select>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์ / ยี่ห้อ</th>
+                      <th>หมวดหมู่</th>
+                      <th>หน่วยงาน / สถานที่</th>
+                      <th>มูลค่า (บาท)</th>
+                      <th>สถานะ</th>
+                      <th>QR/Barcode</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="assetsTableBody">
+                    <tr><td colspan="8" class="text-center">กำลังโหลดรายการครุภัณฑ์...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. RECEIVE ASSET (รับเข้าครุภัณฑ์) -->
+        <section id="view-receive" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-file-circle-plus text-primary"></i> แบบฟอร์มตรวจรับและขึ้นทะเบียนครุภัณฑ์ใหม่</div>
+            </div>
+            <div class="card-body">
+              <form id="receiveAssetForm" onsubmit="handleReceiveAssetSubmit(event)">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">เลขครุภัณฑ์ (สร้างอัตโนมัติ)</label>
+                    <input type="text" id="rcvAssetCode" class="form-control" placeholder="ระบบจะสร้างให้อัตโนมัติ" readonly style="background: #f8fafc; font-weight: 700;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อครุภัณฑ์ *</label>
+                    <input type="text" id="rcvAssetName" class="form-control" required placeholder="เช่น เครื่องกระตุกหัวใจอัตโนมัติ (AED)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">หมวดหมู่ครุภัณฑ์ *</label>
+                    <select id="rcvCategoryID" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ยี่ห้อ (Brand)</label>
+                    <input type="text" id="rcvBrand" class="form-control" placeholder="เช่น Philips, Mindray, Nihon Kohden">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">รุ่น (Model)</label>
+                    <input type="text" id="rcvModel" class="form-control" placeholder="เช่น HeartStart FRx">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">หมายเลขเครื่อง (Serial Number)</label>
+                    <input type="text" id="rcvSerialNumber" class="form-control" placeholder="S/N ของผู้ผลิต">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">วิธีการได้มา *</label>
+                    <select id="rcvAcquisitionMethod" class="form-control" required>
+                      <option value="ซื้อ">จัดซื้อ</option>
+                      <option value="บริจาค">รับบริจาค</option>
+                      <option value="โอน">รับโอนจากหน่วยงานอื่น</option>
+                      <option value="รับจากโครงการ">รับมอบจากโครงการ</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">วันที่รับเข้า/ได้มา *</label>
+                    <input type="date" id="rcvAcquisitionDate" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ราคาจัดซื้อ (บาท) *</label>
+                    <input type="number" id="rcvAcquisitionCost" class="form-control" step="0.01" required placeholder="0.00">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">หน่วยงานที่ใช้งาน *</label>
+                    <select id="rcvDepartmentID" class="form-control" required onchange="loadLocationsForSelect('rcvDepartmentID', 'rcvLocationID')"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">สถานที่จัดวาง / ห้อง</label>
+                    <select id="rcvLocationID" class="form-control"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ผู้รับผิดชอบ / ผู้ดูแล</label>
+                    <input type="text" id="rcvCustodianName" class="form-control" placeholder="ชื่อ-นามสกุล ผู้ครอบครอง">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">คุณลักษณะเฉพาะ / รายละเอียดเพิ่มเติม</label>
+                  <textarea id="rcvSpecification" class="form-control" rows="3" placeholder="ระบุสเปก หรือรายละเอียดอุปกรณ์ประกอบ"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                  <button type="reset" class="btn btn-secondary">ล้างข้อมูล</button>
+                  <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกรับเข้าและขึ้นทะเบียน</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TRANSFERS VIEW (โอนย้าย) -->
+        <section id="view-transfers" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-arrows-split-up-and-left text-primary"></i> รายการโอนย้ายครุภัณฑ์ระหว่างหน่วยงาน</div>
+              <button class="btn btn-primary" onclick="openTransferModal()"><i class="fa-solid fa-plus"></i> บันทึกโอนย้ายใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่โอน</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>จากหน่วยงาน</th>
+                      <th>ไปยังหน่วยงาน</th>
+                      <th>เหตุผล</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transfersTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CHECKOUT / RETURN (เบิกจ่าย / รับคืน) -->
+        <section id="view-checkout" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-hand-holding-hand text-primary"></i> ทะเบียนเบิกจ่ายและรับคืนครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openCheckoutModal()"><i class="fa-solid fa-plus"></i> บันทึกการเบิก/คืน</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่ทำรายการ</th>
+                      <th>ประเภท</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ผู้เบิก/ผู้รับมอบ</th>
+                      <th>หน่วยงาน</th>
+                      <th>เหตุผล / บันทึก</th>
+                      <th>ผู้ทำรายการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="checkoutTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. AUDIT COUNT (ตรวจนับครุภัณฑ์) -->
+        <section id="view-audit-count" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clipboard-check text-primary"></i> รอบการตรวจนับครุภัณฑ์ประจำปี</div>
+              <button class="btn btn-primary" onclick="openInspectionSessionModal('AUDIT_COUNT')"><i class="fa-solid fa-plus"></i> เปิดรอบตรวจนับใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสรอบตรวจ</th>
+                      <th>หัวข้อรอบตรวจนับ</th>
+                      <th>ช่วงเวลา</th>
+                      <th>ผู้รับผิดชอบการตรวจ</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditCountTableBody">
+                    <tr><td colspan="6" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. INSPECTIONS (ตรวจสภาพ) -->
+        <section id="view-inspections" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-stethoscope text-primary"></i> การตรวจสภาพและความพร้อมใช้งานของเครื่องมือแพทย์</div>
+              <button class="btn btn-primary" onclick="openInspectionSessionModal('CONDITION')"><i class="fa-solid fa-plus"></i> บันทึกการตรวจสภาพ</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสตรวจ</th>
+                      <th>รายการตรวจ</th>
+                      <th>วันที่ตรวจ</th>
+                      <th>สถานะความปลอดภัย</th>
+                      <th>การทำงาน</th>
+                      <th>การสอบเทียบ</th>
+                      <th>ผลตรวจ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inspectionsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. PM / MAINTENANCE PLANS -->
+        <section id="view-pm" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-calendar-check text-primary"></i> แผนการบำรุงรักษาเชิงป้องกัน (Preventive Maintenance - PM)</div>
+              <button class="btn btn-primary" onclick="openPmPlanModal()"><i class="fa-solid fa-plus"></i> เพิ่มแผน PM</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>รหัสแผน</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ชื่องาน PM</th>
+                      <th>วันที่กำหนด</th>
+                      <th>ผู้รับผิดชอบ / Vendor</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pmPlansTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดแผน PM...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. REPAIRS (แจ้งซ่อม) -->
+        <section id="view-repairs" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-wrench text-primary"></i> ทะเบียนใบแจ้งซ่อมครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openRepairModal()"><i class="fa-solid fa-plus"></i> แจ้งซ่อมใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่ใบแจ้งซ่อม</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>วันที่แจ้ง</th>
+                      <th>อาการชำรุด</th>
+                      <th>ความเร่งด่วน</th>
+                      <th>สถานะ</th>
+                      <th>ดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="repairsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลแจ้งซ่อม...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. REPAIR HISTORY (ประวัติการซ่อม) -->
+        <section id="view-repair-history" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> ประวัติการซ่อมบำรุงและค่าใช้จ่ายสะสม</div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่ซ่อม</th>
+                      <th>เลขที่ซ่อม</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>อาการ</th>
+                      <th>ผลการซ่อม/อะไหล่</th>
+                      <th>ค่าใช้จ่าย (บาท)</th>
+                      <th>Downtime (ชม.)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="repairHistoryTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดประวัติการซ่อม...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. WARRANTY & CONTRACTS (สัญญาและการรับประกัน) -->
+        <section id="view-warranty" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-shield-halved text-primary"></i> สัญญาประกันและการบำรุงรักษา</div>
+              <button class="btn btn-primary" onclick="openWarrantyModal()"><i class="fa-solid fa-plus"></i> บันทึกสัญญาใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่สัญญา</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>ประเภทสัญญา</th>
+                      <th>บริษัท/ผู้ให้บริการ</th>
+                      <th>วันเริ่มต้น - สิ้นสุด</th>
+                      <th>การติดต่อ</th>
+                      <th>สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="warrantyTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลสัญญา...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. DISPOSALS (จำหน่ายครุภัณฑ์) -->
+        <section id="view-disposals" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-box-archive text-primary"></i> ทะเบียนครุภัณฑ์จำหน่าย / ตัดบัญชี</div>
+              <button class="btn btn-danger" onclick="openDisposalModal()"><i class="fa-solid fa-plus"></i> บันทึกการจำหน่าย</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>เลขที่จำหน่าย</th>
+                      <th>ครุภัณฑ์</th>
+                      <th>วันที่จำหน่าย</th>
+                      <th>เหตุผล</th>
+                      <th>วิธีการ</th>
+                      <th>เลขที่อนุมัติ</th>
+                      <th>ผู้อนุมัติ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="disposalsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลการจำหน่าย...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. ATTACHMENTS (เอกสารและไฟล์แนบ) -->
+        <section id="view-attachments" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-paperclip text-primary"></i> จัดการเอกสารและไฟล์แนบครุภัณฑ์</div>
+              <button class="btn btn-primary" onclick="openAttachmentModal()"><i class="fa-solid fa-upload"></i> อัปโหลดเอกสารใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ชื่อไฟล์เอกสาร</th>
+                      <th>ครุภัณฑ์อ้างอิง</th>
+                      <th>ประเภทเอกสาร</th>
+                      <th>คำอธิบาย</th>
+                      <th>ผู้อัปโหลด</th>
+                      <th>วันที่แนบ</th>
+                      <th>เปิดดู</th>
+                    </tr>
+                  </thead>
+                  <tbody id="attachmentsTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดเอกสาร...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. REPORTS (รายงานและสถิติ) -->
+        <section id="view-reports" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-file-excel text-primary"></i> ศูนย์รายงานและสถิติครุภัณฑ์</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> พิมพ์รายงาน</button>
+                <button class="btn btn-success" onclick="exportReportDataCsv()"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-filter-bar">
+                <select id="reportTypeSelect" class="form-control" style="width: auto; min-width: 250px;" onchange="loadReportData()">
+                  <option value="ALL">1. รายงานทะเบียนครุภัณฑ์ทั้งหมด</option>
+                  <option value="ACTIVE">2. รายงานครุภัณฑ์สภาพปกติพร้อมใช้</option>
+                  <option value="REPAIR">3. รายงานครุภัณฑ์ชำรุด/ส่งซ่อม</option>
+                  <option value="DISPOSED">4. รายงานครุภัณฑ์จำหน่ายแล้ว</option>
+                  <option value="PM_DUE">5. รายงานแผน PM รอบถัดไป</option>
+                </select>
+                <select id="reportDeptFilter" class="form-control" style="width: auto;" onchange="loadReportData()">
+                  <option value="">-- ทุกแผนก --</option>
+                </select>
+              </div>
+
+              <div id="reportSummaryBox" style="background: #f0fdfa; border: 1px solid var(--primary-light); padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 16px; display: flex; gap: 24px; font-weight: 600;">
+                <div>จำนวนรายการ: <span id="repTotalCount" class="text-primary">0</span> รายการ</div>
+                <div>มูลค่าจัดซื้อรวม: <span id="repTotalCost" class="text-primary">0.00</span> บาท</div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table" id="reportResultTable">
+                  <thead>
+                    <tr>
+                      <th>เลขครุภัณฑ์</th>
+                      <th>ชื่อครุภัณฑ์</th>
+                      <th>หมวดหมู่</th>
+                      <th>แผนก</th>
+                      <th>ราคาจัดซื้อ (บาท)</th>
+                      <th>สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportTableBody">
+                    <tr><td colspan="6" class="text-center">กรุณาเลือกประเภทรายงาน</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 15. USERS MANAGEMENT (จัดการผู้ใช้) -->
+        <section id="view-users" class="app-view admin-only" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-users-gear text-primary"></i> การจัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง</div>
+              <button class="btn btn-primary" onclick="openUserModal()"><i class="fa-solid fa-user-plus"></i> เพิ่มผู้ใช้ใหม่</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ชื่อผู้ใช้</th>
+                      <th>ชื่อ-นามสกุล</th>
+                      <th>บทบาท (Role)</th>
+                      <th>หน่วยงาน</th>
+                      <th>สถานะ</th>
+                      <th>ประเภทบัญชี</th>
+                      <th>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลผู้ใช้...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 16. AUDIT LOG (บันทึกประวัติการใช้งาน) -->
+        <section id="view-audit-logs" class="app-view admin-only" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-list-check text-primary"></i> บันทึกเหตุการณ์ระบบ (Audit Trail Log)</div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>วัน-เวลา</th>
+                      <th>ผู้ใช้งาน</th>
+                      <th>บทบาท</th>
+                      <th>การดำเนินการ</th>
+                      <th>โมดูล</th>
+                      <th>รายละเอียด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditLogsTableBody">
+                    <tr><td colspan="6" class="text-center">กำลังโหลดบันทึก Audit...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 17. SETTINGS & SUPABASE SQL SCHEMA (ตั้งค่าระบบ & SQL) -->
+        <section id="view-settings" class="app-view admin-only" style="display: none;">
+          <!-- DEMO MODE SETTINGS -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-flask text-warning"></i> จัดการโหมดทดลอง (Demo Mode Management)</div>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 14px;">
+                โหมดทดลองใช้สำหรับสาธิตและทดสอบฟังก์ชัน ข้อมูลทดลองจะแยกออกจากข้อมูลจริงอย่างสมบูรณ์ (IsDemo = TRUE)
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-warning" onclick="toggleDemoModeSetting()"><i class="fa-solid fa-power-off"></i> <span id="btnDemoModeToggleText">เปิด/ปิด Demo</span></button>
+                <button class="btn btn-outline" onclick="triggerInitDemoData()"><i class="fa-solid fa-database"></i> สร้างชุดข้อมูลตัวอย่าง</button>
+                <button class="btn btn-danger" onclick="triggerClearDemoData()"><i class="fa-solid fa-trash-can"></i> ล้างข้อมูลทดลอง</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUPABASE POSTGRESQL SQL GENERATOR & COPIER -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-database text-primary"></i> โค้ด SQL สำหรับสร้างตารางใน Supabase</div>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 0.9rem; color: var(--text-muted);">
+                คัดลอกโค้ด SQL ด้านล่างนี้ไปวางที่ <strong>Supabase SQL Editor</strong> เพื่อสร้างตารางทั้ง 18 ตาราง, ดัชนี, การตั้งค่าเริ่มต้น, และบัญชีผู้ใช้เริ่มต้น
+              </p>
+              <div class="sql-box-wrapper">
+                <button class="btn-copy-sql" onclick="copySupabaseSql()"><i class="fa-regular fa-copy"></i> คัดลอก SQL ทั้งหมด</button>
+                <textarea id="supabaseSqlCodeBox" class="sql-code-area" readonly></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SYSTEM SETTINGS FORM -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-sliders text-primary"></i> การตั้งค่าข้อมูลหน่วยงานและระบบ</div>
+            </div>
+            <div class="card-body">
+              <form id="systemSettingsForm" onsubmit="handleSaveSettingsSubmit(event)">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ชื่อหน่วยงานเต็ม</label>
+                    <input type="text" id="setOrgName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อย่อหน่วยงาน</label>
+                    <input type="text" id="setOrgShortName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ประเภทหน่วยงาน</label>
+                    <input type="text" id="setOrgType" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">ชื่อระบบ</label>
+                    <input type="text" id="setSystemName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชื่อย่อระบบ</label>
+                    <input type="text" id="setSystemShortName" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ปีงบประมาณ</label>
+                    <input type="text" id="setFiscalYear" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label class="form-label">คำนำหน้าเลขครุภัณฑ์</label>
+                    <input type="text" id="setAssetPrefix" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">คำนำหน้าเลขแจ้งซ่อม</label>
+                    <input type="text" id="setRepairPrefix" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เตือนประกันล่วงหน้า (วัน)</label>
+                    <input type="number" id="setWarrantyWarningDays" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Supabase Project URL</label>
+                    <input type="text" id="setSupabaseUrl" class="form-control" placeholder="https://xyz.supabase.co">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Supabase Anon Key / Service Role Key</label>
+                    <input type="password" id="setSupabaseKey" class="form-control" placeholder="ใส่ Key เพื่อเชื่อมต่อ Supabase จริง">
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                  <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่า</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: ASSET DETAILS & QR CODE / TIMELINE PREVIEW
+       ======================================================================== -->
+  <div id="assetDetailModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-circle-info text-primary"></i> ข้อมูลครุภัณฑ์และ QR Code</h3>
+        <button class="btn-close-modal" onclick="closeModal('assetDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; justify-content: center; background: #f8fafc; padding: 16px; border-radius: var(--radius-md);">
+          <div id="assetModalQrCode" style="padding: 8px; background: white; border-radius: 8px; box-shadow: var(--shadow-sm);"></div>
+          <div>
+            <svg id="assetModalBarcode"></svg>
+            <div style="font-size: 0.8rem; text-align: center; color: var(--text-muted); margin-top: 4px;">สแกนเพื่อเข้าถึงประวัติครุภัณฑ์ทันที</div>
+          </div>
+        </div>
+
+        <div id="assetDetailContent" style="font-size: 0.92rem; line-height: 1.8;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="printAssetCard()"><i class="fa-solid fa-print"></i> พิมพ์การ์ดครุภัณฑ์</button>
+        <button class="btn btn-secondary" onclick="closeModal('assetDetailModal')">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: REPAIR REQUEST FORM
+       ======================================================================== -->
+  <div id="repairModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wrench text-warning"></i> แบบฟอร์มแจ้งซ่อมครุภัณฑ์</h3>
+        <button class="btn-close-modal" onclick="closeModal('repairModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="repairForm" onsubmit="handleRepairSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ที่ต้องการแจ้งซ่อม *</label>
+            <select id="repAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ปัญหา / อาการชำรุด *</label>
+            <textarea id="repProblem" class="form-control" rows="3" required placeholder="อธิบายปัญหาที่พบ เช่น เครื่องไม่ติด, คลื่นสัญญาณมี Noise"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ระดับความเร่งด่วน</label>
+              <select id="repPriority" class="form-control">
+                <option value="NORMAL">ปกติ (NORMAL)</option>
+                <option value="LOW">ต่ำ (LOW)</option>
+                <option value="URGENT">ด่วน (URGENT)</option>
+                <option value="EMERGENCY">ฉุกเฉินวิกฤต (EMERGENCY)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ผู้รับผิดชอบงานซ่อม / ช่าง</label>
+              <input type="text" id="repAssignedTo" class="form-control" placeholder="เช่น นายสมเกียรติ ช่างซ่อมบำรุง">
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('repairModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> ส่งใบแจ้งซ่อม</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: TRANSFER FORM
+       ======================================================================== -->
+  <div id="transferModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-arrows-split-up-and-left text-primary"></i> แบบฟอร์มโอนย้ายครุภัณฑ์</h3>
+        <button class="btn-close-modal" onclick="closeModal('transferModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="transferForm" onsubmit="handleTransferSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ที่ต้องการโอน *</label>
+            <select id="trfAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ไปยังแผนก/หน่วยงาน *</label>
+              <select id="trfToDepartmentID" class="form-control" required onchange="loadLocationsForSelect('trfToDepartmentID', 'trfToLocationID')"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ไปยังสถานที่/ห้อง</label>
+              <select id="trfToLocationID" class="form-control"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ผู้รับมอบ / ผู้รับผิดชอบปลายทาง</label>
+            <input type="text" id="trfToResponsible" class="form-control" placeholder="ชื่อผู้รับผิดชอบใหม่">
+          </div>
+          <div class="form-group">
+            <label class="form-label">เหตุผลความจำเป็นในการโอน *</label>
+            <textarea id="trfReason" class="form-control" rows="2" required placeholder="เช่น ปรับเปลี่ยนการใช้งานตามความจำเป็นของแผนก"></textarea>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('transferModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกการโอนย้าย</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: PM PLAN FORM
+       ======================================================================== -->
+  <div id="pmModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-calendar-plus text-primary"></i> เพิ่มแผนบำรุงรักษาเชิงป้องกัน (PM)</h3>
+        <button class="btn-close-modal" onclick="closeModal('pmModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="pmForm" onsubmit="handlePmSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">เลือกครุภัณฑ์ *</label>
+            <select id="pmAssetId" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่องานบำรุงรักษา *</label>
+            <input type="text" id="pmPlanName" class="form-control" required placeholder="เช่น ตรวจสอบสอบเทียบและเปลี่ยนไส้กรองประจำ 6 เดือน">
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">วันที่กำหนดทำ PM *</label>
+              <input type="date" id="pmScheduledDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">รอบความถี่ (เดือน)</label>
+              <input type="number" id="pmFrequencyMonths" class="form-control" value="6" min="1">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ผู้รับผิดชอบ / ช่าง</label>
+              <input type="text" id="pmAssignedTo" class="form-control" placeholder="ชื่อช่างหรือทีมบำรุงรักษา">
+            </div>
+            <div class="form-group">
+              <label class="form-label">บริษัทผู้แทนจำหน่าย / Vendor</label>
+              <input type="text" id="pmVendor" class="form-control" placeholder="ชื่อบริษัท">
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('pmModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกแผน PM</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: USER FORM
+       ======================================================================== -->
+  <div id="userModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-plus text-primary"></i> ข้อมูลผู้ใช้งานระบบ</h3>
+        <button class="btn-close-modal" onclick="closeModal('userModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="userForm" onsubmit="handleUserSubmit(event)">
+          <input type="hidden" id="usrUserId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">ชื่อผู้ใช้ (Username) *</label>
+              <input type="text" id="usrUsername" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">รหัสผ่าน (Password) *</label>
+              <input type="password" id="usrPassword" class="form-control" placeholder="กำหนดรหัสผ่าน">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อ-นามสกุล *</label>
+            <input type="text" id="usrFullName" class="form-control" required>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">บทบาท (Role) *</label>
+              <select id="usrRole" class="form-control" required>
+                <option value="ADMIN">ADMIN (ผู้ดูแลระบบสูงสุด)</option>
+                <option value="ASSET_MANAGER">ASSET_MANAGER (ผู้จัดการงานครุภัณฑ์)</option>
+                <option value="MAINTENANCE">MAINTENANCE (ช่างซ่อมบำรุง)</option>
+                <option value="DEPARTMENT">DEPARTMENT (ผู้ใช้ประจำหน่วยงาน)</option>
+                <option value="VIEWER">VIEWER (ผู้ดูรายงานอย่างเดียว)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">หน่วยงาน/แผนก</label>
+              <select id="usrDepartmentID" class="form-control"></select>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding-left:0; padding-right:0; margin-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">ยกเลิก</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> บันทึกผู้ใช้</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side Logic -->
+  <script>
+/**
+ * ==============================================================================
+ * HOSPITAL ASSET MANAGEMENT SYSTEM - CLIENT CONTROLLER (VANILLA JS)
+ * ==============================================================================
+ */
+
+// Global State
+let CURRENT_SESSION = null;
+let SYSTEM_SETTINGS = {};
+let MASTER_CATEGORIES = [];
+let MASTER_DEPARTMENTS = [];
+let MASTER_LOCATIONS = [];
+let ASSETS_CACHE = [];
+let ACTIVE_VIEW = 'dashboard';
+
+// Embedded Supabase SQL Script for 1-Click Copy in Settings
+const SUPABASE_SCHEMA_SQL = `-- ==============================================================================
+-- HOSPITAL ASSET MANAGEMENT SYSTEM (ระบบจัดการครุภัณฑ์โรงพยาบาล)
+-- SUPABASE POSTGRESQL DATABASE SCHEMA & SEED DATA
+-- ==============================================================================
+
+-- 1. Users Table
+CREATE TABLE IF NOT EXISTS "Users" (
+    "UserID" VARCHAR(64) PRIMARY KEY,
+    "Username" VARCHAR(100) UNIQUE NOT NULL,
+    "PasswordHash" VARCHAR(255) NOT NULL,
+    "FullName" VARCHAR(255) NOT NULL,
+    "Role" VARCHAR(50) NOT NULL,
+    "DepartmentID" VARCHAR(64),
+    "Email" VARCHAR(255),
+    "Phone" VARCHAR(50),
+    "IsActive" BOOLEAN DEFAULT TRUE,
+    "IsDemoUser" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Sessions Table
+CREATE TABLE IF NOT EXISTS "Sessions" (
+    "SessionToken" VARCHAR(128) PRIMARY KEY,
+    "UserID" VARCHAR(64) NOT NULL REFERENCES "Users"("UserID") ON DELETE CASCADE,
+    "Username" VARCHAR(100) NOT NULL,
+    "Role" VARCHAR(50) NOT NULL,
+    "IsDemoUser" BOOLEAN DEFAULT FALSE,
+    "ExpiresAt" TIMESTAMPTZ NOT NULL,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Settings Table
+CREATE TABLE IF NOT EXISTS "Settings" (
+    "SettingKey" VARCHAR(100) PRIMARY KEY,
+    "SettingValue" TEXT,
+    "Description" TEXT,
+    "UpdatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Departments Table
+CREATE TABLE IF NOT EXISTS "Departments" (
+    "DepartmentID" VARCHAR(64) PRIMARY KEY,
+    "DepartmentCode" VARCHAR(50),
+    "DepartmentName" VARCHAR(255) NOT NULL,
+    "Building" VARCHAR(100),
+    "Floor" VARCHAR(50),
+    "ContactPerson" VARCHAR(255),
+    "Phone" VARCHAR(50),
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Locations Table
+CREATE TABLE IF NOT EXISTS "Locations" (
+    "LocationID" VARCHAR(64) PRIMARY KEY,
+    "LocationCode" VARCHAR(50),
+    "LocationName" VARCHAR(255) NOT NULL,
+    "DepartmentID" VARCHAR(64) REFERENCES "Departments"("DepartmentID") ON DELETE SET NULL,
+    "RoomNumber" VARCHAR(50),
+    "Building" VARCHAR(100),
+    "Floor" VARCHAR(50),
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. AssetCategories Table
+CREATE TABLE IF NOT EXISTS "AssetCategories" (
+    "AssetCategoryID" VARCHAR(64) PRIMARY KEY,
+    "CategoryCode" VARCHAR(50),
+    "CategoryName" VARCHAR(255) NOT NULL,
+    "CategoryType" VARCHAR(100),
+    "UsefulLifeYears" INTEGER DEFAULT 5,
+    "DepreciationRate" NUMERIC(5,2) DEFAULT 20.00,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. Assets Table
+CREATE TABLE IF NOT EXISTS "Assets" (
+    "AssetID" VARCHAR(64) PRIMARY KEY,
+    "AssetCode" VARCHAR(100) NOT NULL,
+    "SerialNumber" VARCHAR(100),
+    "Barcode" VARCHAR(100),
+    "QRCode" VARCHAR(255),
+    "AssetName" VARCHAR(255) NOT NULL,
+    "AssetCategoryID" VARCHAR(64) REFERENCES "AssetCategories"("AssetCategoryID") ON DELETE SET NULL,
+    "AssetType" VARCHAR(100),
+    "Brand" VARCHAR(100),
+    "Model" VARCHAR(100),
+    "Specification" TEXT,
+    "Unit" VARCHAR(50) DEFAULT 'เครื่อง',
+    "Quantity" INTEGER DEFAULT 1,
+    "AcquisitionDate" DATE,
+    "AcquisitionMethod" VARCHAR(100),
+    "Vendor" VARCHAR(255),
+    "PurchaseOrderNo" VARCHAR(100),
+    "InvoiceNo" VARCHAR(100),
+    "BudgetType" VARCHAR(100),
+    "BudgetYear" VARCHAR(10),
+    "AcquisitionCost" NUMERIC(15,2) DEFAULT 0.00,
+    "UsefulLife" INTEGER DEFAULT 5,
+    "ResidualValue" NUMERIC(15,2) DEFAULT 1.00,
+    "CurrentValue" NUMERIC(15,2) DEFAULT 0.00,
+    "WarrantyStartDate" DATE,
+    "WarrantyEndDate" DATE,
+    "DepartmentID" VARCHAR(64) REFERENCES "Departments"("DepartmentID") ON DELETE SET NULL,
+    "LocationID" VARCHAR(64) REFERENCES "Locations"("LocationID") ON DELETE SET NULL,
+    "ResponsibleUserID" VARCHAR(64),
+    "CustodianName" VARCHAR(255),
+    "Condition" VARCHAR(50) DEFAULT 'NORMAL',
+    "Status" VARCHAR(50) DEFAULT 'ACTIVE',
+    "RiskLevel" VARCHAR(50) DEFAULT 'MEDIUM',
+    "Criticality" VARCHAR(50) DEFAULT 'STANDARD',
+    "LastInspectionDate" DATE,
+    "NextInspectionDate" DATE,
+    "LastPMDate" DATE,
+    "NextPMDate" DATE,
+    "DisposalDate" DATE,
+    "DisposalReason" TEXT,
+    "Note" TEXT,
+    "ImageUrl" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "CreatedBy" VARCHAR(100),
+    "UpdatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedBy" VARCHAR(100)
+);
+
+-- 8. AssetTransactions Table
+CREATE TABLE IF NOT EXISTS "AssetTransactions" (
+    "TransactionID" VARCHAR(64) PRIMARY KEY,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "TransactionType" VARCHAR(50) NOT NULL,
+    "TransactionDate" TIMESTAMPTZ DEFAULT NOW(),
+    "FromDepartmentID" VARCHAR(64),
+    "ToDepartmentID" VARCHAR(64),
+    "FromLocationID" VARCHAR(64),
+    "ToLocationID" VARCHAR(64),
+    "ResponsiblePerson" VARCHAR(255),
+    "Reason" TEXT,
+    "DocumentNo" VARCHAR(100),
+    "PerformedBy" VARCHAR(100),
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Transfers Table
+CREATE TABLE IF NOT EXISTS "Transfers" (
+    "TransferID" VARCHAR(64) PRIMARY KEY,
+    "TransferCode" VARCHAR(50) NOT NULL,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "FromDepartmentID" VARCHAR(64),
+    "FromLocationID" VARCHAR(64),
+    "ToDepartmentID" VARCHAR(64),
+    "ToLocationID" VARCHAR(64),
+    "FromResponsible" VARCHAR(255),
+    "ToResponsible" VARCHAR(255),
+    "TransferDate" DATE DEFAULT CURRENT_DATE,
+    "Reason" TEXT,
+    "RequestedBy" VARCHAR(100),
+    "ApprovedBy" VARCHAR(100),
+    "Status" VARCHAR(50) DEFAULT 'PENDING',
+    "Note" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. Inspections Table
+CREATE TABLE IF NOT EXISTS "Inspections" (
+    "InspectionID" VARCHAR(64) PRIMARY KEY,
+    "InspectionCode" VARCHAR(50) NOT NULL,
+    "InspectionType" VARCHAR(50) NOT NULL,
+    "SessionTitle" VARCHAR(255) NOT NULL,
+    "StartDate" DATE,
+    "EndDate" DATE,
+    "DepartmentID" VARCHAR(64),
+    "Inspector" VARCHAR(255),
+    "Status" VARCHAR(50) DEFAULT 'IN_PROGRESS',
+    "SummaryNotes" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. InspectionItems Table
+CREATE TABLE IF NOT EXISTS "InspectionItems" (
+    "ItemID" VARCHAR(64) PRIMARY KEY,
+    "InspectionID" VARCHAR(64) NOT NULL REFERENCES "Inspections"("InspectionID") ON DELETE CASCADE,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "CheckStatus" VARCHAR(50) DEFAULT 'FOUND_NORMAL',
+    "Condition" VARCHAR(50),
+    "ActualDepartmentID" VARCHAR(64),
+    "ActualLocationID" VARCHAR(64),
+    "ActualCustodian" VARCHAR(255),
+    "SafetyStatus" VARCHAR(50),
+    "FunctionalStatus" VARCHAR(50),
+    "CalibrationStatus" VARCHAR(50),
+    "Findings" TEXT,
+    "Recommendation" TEXT,
+    "PhotoUrl" TEXT,
+    "CheckedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "CheckedBy" VARCHAR(100),
+    "IsDemo" BOOLEAN DEFAULT FALSE
+);
+
+-- 12. MaintenancePlans Table
+CREATE TABLE IF NOT EXISTS "MaintenancePlans" (
+    "PlanID" VARCHAR(64) PRIMARY KEY,
+    "PlanCode" VARCHAR(50) NOT NULL,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "PlanName" VARCHAR(255) NOT NULL,
+    "FrequencyMonths" INTEGER DEFAULT 6,
+    "ScheduledDate" DATE NOT NULL,
+    "ActualDate" DATE,
+    "AssignedTo" VARCHAR(255),
+    "Vendor" VARCHAR(255),
+    "Status" VARCHAR(50) DEFAULT 'SCHEDULED',
+    "EstimatedCost" NUMERIC(12,2) DEFAULT 0.00,
+    "ActualCost" NUMERIC(12,2) DEFAULT 0.00,
+    "PartsUsed" TEXT,
+    "Result" TEXT,
+    "NextPMDate" DATE,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. RepairRequests Table
+CREATE TABLE IF NOT EXISTS "RepairRequests" (
+    "RepairRequestID" VARCHAR(64) PRIMARY KEY,
+    "RepairCode" VARCHAR(50) NOT NULL,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "RequestDate" TIMESTAMPTZ DEFAULT NOW(),
+    "Reporter" VARCHAR(255) NOT NULL,
+    "DepartmentID" VARCHAR(64),
+    "Problem" TEXT NOT NULL,
+    "Symptom" TEXT,
+    "Priority" VARCHAR(50) DEFAULT 'NORMAL',
+    "SafetyRisk" BOOLEAN DEFAULT FALSE,
+    "Status" VARCHAR(50) DEFAULT 'REQUESTED',
+    "AssignedTo" VARCHAR(255),
+    "Vendor" VARCHAR(255),
+    "StartDate" DATE,
+    "CompletedDate" DATE,
+    "Diagnosis" TEXT,
+    "RepairAction" TEXT,
+    "PartsUsed" TEXT,
+    "LaborCost" NUMERIC(12,2) DEFAULT 0.00,
+    "PartsCost" NUMERIC(12,2) DEFAULT 0.00,
+    "OtherCost" NUMERIC(12,2) DEFAULT 0.00,
+    "TotalCost" NUMERIC(12,2) DEFAULT 0.00,
+    "DowntimeHours" NUMERIC(8,1) DEFAULT 0.0,
+    "Result" VARCHAR(100),
+    "WarrantyClaim" BOOLEAN DEFAULT FALSE,
+    "Note" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 14. RepairHistory Table
+CREATE TABLE IF NOT EXISTS "RepairHistory" (
+    "HistoryID" VARCHAR(64) PRIMARY KEY,
+    "RepairRequestID" VARCHAR(64) REFERENCES "RepairRequests"("RepairRequestID") ON DELETE SET NULL,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "RepairDate" DATE,
+    "RepairCode" VARCHAR(50),
+    "Problem" TEXT,
+    "ActionTaken" TEXT,
+    "TotalCost" NUMERIC(12,2) DEFAULT 0.00,
+    "Technician" VARCHAR(255),
+    "Vendor" VARCHAR(255),
+    "DowntimeHours" NUMERIC(8,1) DEFAULT 0.0,
+    "Result" VARCHAR(100),
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 15. WarrantyContracts Table
+CREATE TABLE IF NOT EXISTS "WarrantyContracts" (
+    "WarrantyContractID" VARCHAR(64) PRIMARY KEY,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "ContractNo" VARCHAR(100),
+    "ContractType" VARCHAR(100) DEFAULT 'WARRANTY',
+    "Vendor" VARCHAR(255) NOT NULL,
+    "StartDate" DATE NOT NULL,
+    "EndDate" DATE NOT NULL,
+    "SLA" VARCHAR(100),
+    "ContactPerson" VARCHAR(255),
+    "Phone" VARCHAR(50),
+    "Email" VARCHAR(255),
+    "CoverageDetails" TEXT,
+    "ContractAmount" NUMERIC(12,2) DEFAULT 0.00,
+    "Note" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 16. Disposals Table
+CREATE TABLE IF NOT EXISTS "Disposals" (
+    "DisposalID" VARCHAR(64) PRIMARY KEY,
+    "DisposalCode" VARCHAR(50) NOT NULL,
+    "AssetID" VARCHAR(64) NOT NULL REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "DisposalDate" DATE NOT NULL DEFAULT CURRENT_DATE,
+    "Reason" TEXT NOT NULL,
+    "Method" VARCHAR(100),
+    "ApprovalNo" VARCHAR(100),
+    "ApprovedBy" VARCHAR(255),
+    "BookValue" NUMERIC(15,2) DEFAULT 0.00,
+    "DisposalValue" NUMERIC(15,2) DEFAULT 0.00,
+    "BuyerOrReceiver" VARCHAR(255),
+    "EvidenceFile" TEXT,
+    "Status" VARCHAR(50) DEFAULT 'COMPLETED',
+    "Note" TEXT,
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. Attachments Table
+CREATE TABLE IF NOT EXISTS "Attachments" (
+    "AttachmentID" VARCHAR(64) PRIMARY KEY,
+    "AssetID" VARCHAR(64) REFERENCES "Assets"("AssetID") ON DELETE CASCADE,
+    "RefType" VARCHAR(50),
+    "RefID" VARCHAR(64),
+    "FileName" VARCHAR(255) NOT NULL,
+    "FileType" VARCHAR(50),
+    "FileSize" BIGINT,
+    "FileUrl" TEXT NOT NULL,
+    "Description" TEXT,
+    "UploadedBy" VARCHAR(100),
+    "IsDemo" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 18. AuditLogs Table
+CREATE TABLE IF NOT EXISTS "AuditLogs" (
+    "LogID" VARCHAR(64) PRIMARY KEY,
+    "UserID" VARCHAR(64),
+    "Username" VARCHAR(100) NOT NULL,
+    "Role" VARCHAR(50),
+    "Action" VARCHAR(100) NOT NULL,
+    "Module" VARCHAR(100) NOT NULL,
+    "RecordID" VARCHAR(64),
+    "Details" TEXT,
+    "IPAddress" VARCHAR(50),
+    "IsDemoAction" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed Default Settings
+INSERT INTO "Settings" ("SettingKey", "SettingValue", "Description") VALUES
+('ORGANIZATION_NAME', 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านสวนสมบูรณ์', 'ชื่อหน่วยงานเต็ม'),
+('ORGANIZATION_SHORT_NAME', 'รพ.สต.บ้านสวนสมบูรณ์', 'ชื่อย่อหน่วยงาน'),
+('ORGANIZATION_TYPE', 'โรงพยาบาลส่งเสริมสุขภาพตำบล', 'ประเภทหน่วยงานบริการสุขภาพ'),
+('SYSTEM_NAME', 'ระบบจัดการครุภัณฑ์และเครื่องมือแพทย์', 'ชื่อระบบ'),
+('SYSTEM_SHORT_NAME', 'H-AMS', 'ชื่อย่อระบบ'),
+('ADMIN_NAME', 'นายแพทย์ประสิทธิ์ สุขเกษม', 'ชื่อผู้ดูแลระบบหลัก'),
+('ADMIN_POSITION', 'ผู้อำนวยการโรงพยาบาล', 'ตำแหน่งผู้ดูแลระบบ'),
+('ORGANIZATION_ADDRESS', 'เลขที่ 99 หมู่ 4 ต.บ้านสวน อ.เมือง จ.ชลบุรี 20000', 'ที่อยู่หน่วยงาน'),
+('ORGANIZATION_PHONE', '038-123456', 'เบอร์โทรศัพท์'),
+('ORGANIZATION_EMAIL', 'contact@baansuanhospital.go.th', 'อีเมลหน่วยงาน'),
+('FISCAL_YEAR', '2569', 'ปีงบประมาณปัจจุบัน'),
+('ASSET_PREFIX', 'AST-', 'คำนำหน้าเลขครุภัณฑ์'),
+('TRANSFER_PREFIX', 'TRF-', 'คำนำหน้าเลขโอนย้าย'),
+('REPAIR_PREFIX', 'REP-', 'คำนำหน้าเลขแจ้งซ่อม'),
+('INSPECTION_PREFIX', 'INS-', 'คำนำหน้าเลขตรวจนับ/ตรวจสภาพ'),
+('DISPOSAL_PREFIX', 'DSP-', 'คำนำหน้าเลขจำหน่าย'),
+('MAINTENANCE_PREFIX', 'PM-', 'คำนำหน้าเลขบำรุงรักษา'),
+('WARRANTY_WARNING_DAYS', '30', 'เตือนก่อนประกันหมดอายุ (วัน)'),
+('PM_WARNING_DAYS', '15', 'เตือนก่อนถึงรอบ PM (วัน)'),
+('LOW_VALUE_THRESHOLD', '10000', 'เกณฑ์มูลค่าครุภัณฑ์ต่ำกว่าเกณฑ์ (บาท)'),
+('DEMO_ENABLED', 'TRUE', 'สถานะเปิดใช้งานโหมดทดลอง (TRUE/FALSE)'),
+('SHOW_LOGO', 'TRUE', 'แสดงโลโก้ระบบ'),
+('PRINT_HEADER_TEXT', 'แบบฟอร์มครุภัณฑ์ราชการ - รพ.สต.บ้านสวนสมบูรณ์', 'หัวกระดาษพิมพ์'),
+('PRINT_FOOTER_TEXT', 'เอกสารควบคุมภายในระบบจัดการครุภัณฑ์อิเล็กทรอนิกส์', 'ท้ายกระดาษพิมพ์')
+ON CONFLICT ("SettingKey") DO NOTHING;
+
+-- Seed Default Admin & Demo User (Passwords: 1234)
+INSERT INTO "Users" ("UserID", "Username", "PasswordHash", "FullName", "Role", "DepartmentID", "IsActive", "IsDemoUser") VALUES
+('usr_admin_001', 'admin', '1234', 'ผู้ดูแลระบบสูงสุด (Admin)', 'ADMIN', 'DEP-ADM', TRUE, FALSE),
+('usr_demo_001', 'demo', '1234', 'ผู้ใช้งานโหมดทดลอง (Demo User)', 'DEMO', 'DEP-OPD', TRUE, TRUE)
+ON CONFLICT ("Username") DO NOTHING;
+`;
+
+// -----------------------------------------------------------------------------
+// UNIFIED BACKEND API CALL BRIDGE (GAS & STANDALONE SUPABASE COMPATIBLE)
+// -----------------------------------------------------------------------------
+
+function callBackend(functionName, ...args) {
+  return new Promise((resolve, reject) => {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler((response) => {
+          if (response && response.success === false) {
+            reject(new Error(response.message || 'เกิดข้อผิดพลาดในการประมวลผล'));
+          } else {
+            resolve(response);
+          }
+        })
+        .withFailureHandler((error) => {
+          reject(error);
+        })[functionName](...args);
+    } else {
+      // Standalone execution engine (Local / GitHub Pages fallback)
+      simulateStandaloneBackend(functionName, args)
+        .then(resolve)
+        .catch(reject);
+    }
+  });
+}
+
+/**
+ * In-memory fallback simulation for standalone / GitHub Pages testing
+ */
+let localMockDb = null;
+function getLocalMockDb() {
+  if (!localMockDb) {
+    localMockDb = {
+      assets: [
+        {
+          AssetID: 'DEMO-AST-001',
+          AssetCode: 'AST-2569-00001',
+          SerialNumber: 'DEF-SN-89011',
+          Barcode: '885000100001',
+          QRCode: 'QR-AST-00001',
+          AssetName: 'เครื่องกระตุกหัวใจด้วยไฟฟ้าอัตโนมัติ (AED)',
+          AssetCategoryID: 'CAT-MED-01',
+          Brand: 'Philips',
+          Model: 'HeartStart FRx',
+          AcquisitionDate: '2024-10-15',
+          AcquisitionMethod: 'ซื้อ',
+          AcquisitionCost: 95000,
+          DepartmentID: 'DEP-ER',
+          LocationID: 'LOC-ER-01',
+          CustodianName: 'พว.มนัส ชัยชนะ',
+          Condition: 'NORMAL',
+          Status: 'ACTIVE',
+          IsDemo: true
+        },
+        {
+          AssetID: 'DEMO-AST-002',
+          AssetCode: 'AST-2569-00002',
+          SerialNumber: 'MON-883210-TH',
+          Barcode: '885000100002',
+          QRCode: 'QR-AST-00002',
+          AssetName: 'เครื่องติดตามการทำงานของหัวใจและสัญญาณชีพ (Patient Monitor)',
+          AssetCategoryID: 'CAT-MED-01',
+          Brand: 'Mindray',
+          Model: 'ePM 12M',
+          AcquisitionDate: '2024-11-20',
+          AcquisitionMethod: 'ซื้อ',
+          AcquisitionCost: 145000,
+          DepartmentID: 'DEP-ER',
+          LocationID: 'LOC-ER-01',
+          CustodianName: 'พว.มนัส ชัยชนะ',
+          Condition: 'NORMAL',
+          Status: 'ACTIVE',
+          IsDemo: true
+        },
+        {
+          AssetID: 'DEMO-AST-003',
+          AssetCode: 'AST-2569-00003',
+          SerialNumber: 'ECG-12C-5542',
+          Barcode: '885000100004',
+          QRCode: 'QR-AST-00004',
+          AssetName: 'เครื่องตรวจคลื่นไฟฟ้าหัวใจ 12 ลีด (12-Lead ECG)',
+          AssetCategoryID: 'CAT-MED-02',
+          Brand: 'Nihon Kohden',
+          Model: 'ECG-2350',
+          AcquisitionDate: '2023-08-15',
+          AcquisitionMethod: 'ซื้อ',
+          AcquisitionCost: 185000,
+          DepartmentID: 'DEP-OPD',
+          LocationID: 'LOC-OPD-01',
+          CustodianName: 'พว.สุดารัตน์',
+          Condition: 'REPAIRABLE',
+          Status: 'IN_REPAIR',
+          IsDemo: true
+        }
+      ],
+      repairs: [
+        {
+          RepairRequestID: 'REP-001',
+          RepairCode: 'REP-2569-00001',
+          AssetID: 'DEMO-AST-003',
+          RequestDate: new Date().toISOString(),
+          Reporter: 'พว.สุดารัตน์',
+          Problem: 'สัญญาณลีด V1-V3 ขาดหาย มี Noise แทรก',
+          Priority: 'URGENT',
+          Status: 'IN_REPAIR',
+          AssignedTo: 'นายสมเกียรติ ช่างซ่อมบำรุง',
+          IsDemo: true
+        }
+      ],
+      pmPlans: [
+        {
+          PlanID: 'PM-001',
+          PlanCode: 'PM-2569-00001',
+          AssetID: 'DEMO-AST-001',
+          PlanName: 'สอบเทียบพลังงาน AED ประจำ 6 เดือน',
+          ScheduledDate: '2026-10-15',
+          AssignedTo: 'ศูนย์วิศวกรรมการแพทย์',
+          Status: 'SCHEDULED',
+          IsDemo: true
+        }
+      ],
+      transfers: [],
+      users: [
+        { UserID: 'usr_admin_001', Username: 'admin', FullName: 'ผู้ดูแลระบบสูงสุด (Admin)', Role: 'ADMIN', DepartmentID: 'DEP-ADM', IsActive: true, IsDemoUser: false },
+        { UserID: 'usr_demo_001', Username: 'demo', FullName: 'ผู้ใช้งานโหมดทดลอง (Demo User)', Role: 'DEMO', DepartmentID: 'DEP-OPD', IsActive: true, IsDemoUser: true }
+      ],
+      auditLogs: [
+        { LogID: 'LOG-001', CreatedAt: new Date().toISOString(), Username: 'admin', Role: 'ADMIN', Action: 'LOGIN', Module: 'AUTH', Details: 'เข้าสู่ระบบสำเร็จ' }
+      ]
+    };
+  }
+  return localMockDb;
+}
+
+function simulateStandaloneBackend(fnName, args) {
+  return new Promise((resolve) => {
+    const db = getLocalMockDb();
+    setTimeout(() => {
+      if (fnName === 'loginUser') {
+        const [username, password] = args;
+        if ((username === 'admin' || username === 'demo') && password === '1234') {
+          resolve({
+            success: true,
+            token: 'SES-' + Date.now(),
+            user: {
+              userId: username === 'admin' ? 'usr_admin_001' : 'usr_demo_001',
+              username: username,
+              fullName: username === 'admin' ? 'ผู้ดูแลระบบสูงสุด (Admin)' : 'ผู้ใช้งานโหมดทดลอง (Demo User)',
+              role: username === 'admin' ? 'ADMIN' : 'DEMO',
+              departmentId: username === 'admin' ? 'DEP-ADM' : 'DEP-OPD',
+              isDemo: username === 'demo'
+            }
+          });
+        } else {
+          resolve({ success: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (ทดสอบ: admin/1234 หรือ demo/1234)' });
+        }
+      } else if (fnName === 'getSettings') {
+        resolve({
+          success: true,
+          data: {
+            ORGANIZATION_NAME: 'โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านสวนสมบูรณ์',
+            ORGANIZATION_SHORT_NAME: 'รพ.สต.บ้านสวนสมบูรณ์',
+            SYSTEM_NAME: 'ระบบจัดการครุภัณฑ์และเครื่องมือแพทย์',
+            SYSTEM_SHORT_NAME: 'H-AMS',
+            FISCAL_YEAR: '2569',
+            ASSET_PREFIX: 'AST-',
+            REPAIR_PREFIX: 'REP-',
+            DEMO_ENABLED: 'TRUE'
+          }
+        });
+      } else if (fnName === 'getDepartments') {
+        resolve({
+          success: true,
+          data: [
+            { DepartmentID: 'DEP-ADM', DepartmentName: 'ฝ่ายบริหารงานทั่วไป' },
+            { DepartmentID: 'DEP-OPD', DepartmentName: 'แผนกผู้ป่วยนอก (OPD)' },
+            { DepartmentID: 'DEP-ER', DepartmentName: 'แผนกอุบัติเหตุและฉุกเฉิน (ER)' },
+            { DepartmentID: 'DEP-IPD', DepartmentName: 'หอผู้ป่วยใน (IPD)' },
+            { DepartmentID: 'DEP-DENT', DepartmentName: 'กลุ่มงานทันตกรรม' },
+            { DepartmentID: 'DEP-LAB', DepartmentName: 'กลุ่มงานเทคนิคการแพทย์' },
+            { DepartmentID: 'DEP-ENG', DepartmentName: 'หน่วยซ่อมบำรุง' }
+          ]
+        });
+      } else if (fnName === 'getAssetCategories') {
+        resolve({
+          success: true,
+          data: [
+            { AssetCategoryID: 'CAT-MED-01', CategoryName: 'ครุภัณฑ์การแพทย์ช่วยชีวิตและวิกฤต' },
+            { AssetCategoryID: 'CAT-MED-02', CategoryName: 'ครุภัณฑ์การแพทย์ตรวจวินิจฉัย' },
+            { AssetCategoryID: 'CAT-COM-01', CategoryName: 'ครุภัณฑ์คอมพิวเตอร์และเครือข่าย' },
+            { AssetCategoryID: 'CAT-OFF-01', CategoryName: 'ครุภัณฑ์สำนักงาน' },
+            { AssetCategoryID: 'CAT-VEH-01', CategoryName: 'ครุภัณฑ์ยานพาหนะ' }
+          ]
+        });
+      } else if (fnName === 'getLocations') {
+        resolve({
+          success: true,
+          data: [
+            { LocationID: 'LOC-ER-01', LocationName: 'ห้องช่วยฟื้นคืนชีพ ER-01', DepartmentID: 'DEP-ER' },
+            { LocationID: 'LOC-OPD-01', LocationName: 'ห้องตรวจ 101', DepartmentID: 'DEP-OPD' },
+            { LocationID: 'LOC-IPD-01', LocationName: 'วอร์ดสามัญ ชั้น 3', DepartmentID: 'DEP-IPD' }
+          ]
+        });
+      } else if (fnName === 'getDashboardData') {
+        const assets = db.assets;
+        resolve({
+          success: true,
+          stats: {
+            totalAssets: assets.length,
+            totalValue: assets.reduce((s, a) => s + (a.AcquisitionCost || 0), 0),
+            normalCount: assets.filter(a => a.Status === 'ACTIVE').length,
+            damagedCount: assets.filter(a => a.Condition === 'DAMAGED').length,
+            repairCount: assets.filter(a => a.Status === 'IN_REPAIR').length,
+            pendingDisposalCount: 0,
+            openRepairs: db.repairs.length,
+            pmDueSoon: db.pmPlans.length
+          },
+          recentAssets: assets
+        });
+      } else if (fnName === 'getAssets') {
+        resolve({ success: true, data: db.assets });
+      } else if (fnName === 'generateAssetCode') {
+        resolve({ success: true, code: 'AST-2569-' + ('0000' + (db.assets.length + 1)).slice(-5) });
+      } else if (fnName === 'saveAsset' || fnName === 'receiveAsset') {
+        const item = args[1];
+        if (!item.AssetID) item.AssetID = 'AST-' + Date.now();
+        db.assets.unshift(item);
+        resolve({ success: true, message: 'บันทึกสำเร็จ', data: item });
+      } else if (fnName === 'getRepairHistory') {
+        resolve({ success: true, data: db.repairs });
+      } else if (fnName === 'getMaintenancePlans') {
+        resolve({ success: true, data: db.pmPlans });
+      } else if (fnName === 'getUsers') {
+        resolve({ success: true, data: db.users });
+      } else if (fnName === 'saveUser') {
+        const u = args[1];
+        if (!u.UserID) u.UserID = 'USR-' + Date.now();
+        db.users.push(u);
+        resolve({ success: true, message: 'บันทึกผู้ใช้สำเร็จ' });
+      } else if (fnName === 'clearDemoData') {
+        db.assets = db.assets.filter(a => !a.IsDemo);
+        resolve({ success: true, message: 'ล้างข้อมูลทดลองสำเร็จ' });
+      } else if (fnName === 'initializeDemoData') {
+        resolve({ success: true, message: 'สร้างข้อมูลทดลองตัวอย่างเรียบร้อย' });
+      } else {
+        resolve({ success: true, message: 'ดำเนินการสำเร็จ', data: [] });
+      }
+    }, 200);
+  });
+}
+
+// -----------------------------------------------------------------------------
+// APPLICATION INITIALIZATION & AUTHENTICATION
+// -----------------------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderThaiDateHeader();
+  loadInitialSettings();
+  checkExistingSession();
+  
+  // Render Supabase SQL code into settings text box
+  const sqlBox = document.getElementById('supabaseSqlCodeBox');
+  if (sqlBox) {
+    sqlBox.value = SUPABASE_SCHEMA_SQL;
+  }
+});
+
+function renderThaiDateHeader() {
+  const d = new Date();
+  const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const formatted = `${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
+  const el = document.getElementById('headerThaiDate');
+  if (el) el.textContent = formatted;
+}
+
+function checkExistingSession() {
+  const stored = sessionStorage.getItem('H_AMS_SESSION');
+  if (stored) {
+    try {
+      const sess = JSON.parse(stored);
+      CURRENT_SESSION = sess;
+      setupUserInterface(sess.user);
+    } catch (e) {
+      sessionStorage.removeItem('H_AMS_SESSION');
+    }
+  }
+}
+
+async function loadInitialSettings() {
+  try {
+    const res = await callBackend('getSettings', null);
+    if (res && res.data) {
+      SYSTEM_SETTINGS = res.data;
+      applySystemSettings(res.data);
+    }
+  } catch (err) {
+    console.warn('Initial settings loaded with defaults');
+  }
+}
+
+function applySystemSettings(settings) {
+  const sysName = settings.SYSTEM_NAME || 'ระบบจัดการครุภัณฑ์โรงพยาบาล';
+  const orgName = settings.ORGANIZATION_NAME || 'โรงพยาบาล';
+  const shortName = settings.SYSTEM_SHORT_NAME || 'H-AMS';
+
+  if (document.getElementById('loginSystemTitle')) document.getElementById('loginSystemTitle').textContent = sysName;
+  if (document.getElementById('loginOrgTitle')) document.getElementById('loginOrgTitle').textContent = orgName;
+  if (document.getElementById('brandSystemName')) document.getElementById('brandSystemName').textContent = shortName;
+  if (document.getElementById('brandOrgName')) document.getElementById('brandOrgName').textContent = settings.ORGANIZATION_SHORT_NAME || orgName;
+
+  // Settings form fields
+  if (document.getElementById('setOrgName')) document.getElementById('setOrgName').value = settings.ORGANIZATION_NAME || '';
+  if (document.getElementById('setOrgShortName')) document.getElementById('setOrgShortName').value = settings.ORGANIZATION_SHORT_NAME || '';
+  if (document.getElementById('setOrgType')) document.getElementById('setOrgType').value = settings.ORGANIZATION_TYPE || '';
+  if (document.getElementById('setSystemName')) document.getElementById('setSystemName').value = settings.SYSTEM_NAME || '';
+  if (document.getElementById('setSystemShortName')) document.getElementById('setSystemShortName').value = settings.SYSTEM_SHORT_NAME || '';
+  if (document.getElementById('setFiscalYear')) document.getElementById('setFiscalYear').value = settings.FISCAL_YEAR || '2569';
+  if (document.getElementById('setAssetPrefix')) document.getElementById('setAssetPrefix').value = settings.ASSET_PREFIX || 'AST-';
+  if (document.getElementById('setRepairPrefix')) document.getElementById('setRepairPrefix').value = settings.REPAIR_PREFIX || 'REP-';
+  if (document.getElementById('setWarrantyWarningDays')) document.getElementById('setWarrantyWarningDays').value = settings.WARRANTY_WARNING_DAYS || '30';
+  if (document.getElementById('setSupabaseUrl')) document.getElementById('setSupabaseUrl').value = settings.SUPABASE_URL || '';
+}
+
+function fillLoginForm(user, pass) {
+  document.getElementById('loginUsername').value = user;
+  document.getElementById('loginPassword').value = pass;
+}
+
+async function handleLoginSubmit(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!username || !password) {
+    showToast('warning', 'แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+    return;
+  }
+
+  showLoading('กำลังเข้าสู่ระบบและตรวจสอบสิทธิ์...');
+  try {
+    const res = await callBackend('loginUser', username, password);
+    hideLoading();
+    if (res && res.success) {
+      CURRENT_SESSION = res;
+      sessionStorage.setItem('H_AMS_SESSION', JSON.stringify(res));
+      setupUserInterface(res.user);
+      showToast('success', 'ยินดีต้อนรับ', `เข้าสู่ระบบสำเร็จในฐานะ: ${res.user.fullName}`);
+    } else {
+      showToast('danger', 'เข้าสู่ระบบไม่สำเร็จ', res.message || 'รหัสผ่านหรือชื่อผู้ใช้ไม่ถูกต้อง');
+    }
+  } catch (err) {
+    hideLoading();
+    showToast('danger', 'ข้อผิดพลาด', err.message || 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์');
+  }
+}
+
+function setupUserInterface(user) {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'flex';
+
+  document.getElementById('userDisplayName').textContent = user.fullName || user.username;
+  document.getElementById('userRoleBadge').textContent = user.role;
+  document.getElementById('userAvatarText').textContent = (user.username || 'U').substring(0, 2).toUpperCase();
+
+  // Demo badge header visibility
+  const demoBadge = document.getElementById('demoBadgeHeader');
+  if (demoBadge) {
+    demoBadge.style.display = user.isDemo ? 'inline-flex' : 'none';
+  }
+
+  // Role permissions: Hide admin-only sections for non-admin
+  const adminElements = document.querySelectorAll('.admin-only');
+  adminElements.forEach(el => {
+    el.style.display = (user.role === 'ADMIN') ? '' : 'none';
+  });
+
+  // Load Master Data & Default View
+  loadMasterData();
+  switchView('dashboard');
+}
+
+async function handleLogout() {
+  openConfirmModal('ออกจากระบบ', 'คุณต้องการออกจากระบบจัดการครุภัณฑ์หรือไม่?', async () => {
+    showLoading('กำลังออกจากระบบ...');
+    if (CURRENT_SESSION && CURRENT_SESSION.token) {
+      try {
+        await callBackend('logoutUser', CURRENT_SESSION.token);
+      } catch (e) {}
+    }
+    hideLoading();
+    CURRENT_SESSION = null;
+    sessionStorage.removeItem('H_AMS_SESSION');
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('loginView').style.display = 'flex';
+    showToast('info', 'ออกจากระบบ', 'ออกจากระบบเรียบร้อยแล้ว');
+  });
+}
+
+// -----------------------------------------------------------------------------
+// NAVIGATION & VIEW SWITCHER
+// -----------------------------------------------------------------------------
+
+function switchView(viewName) {
+  ACTIVE_VIEW = viewName;
+  toggleSidebar(false);
+
+  // Update sidebar active menu item
+  document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
+    if (item.getAttribute('data-view') === viewName) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  // Hide all view sections
+  document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
+
+  // Page titles dictionary
+  const titleMap = {
+    'dashboard': { title: 'ภาพรวม (Dashboard)', sub: 'ระบบบริหารจัดการและติดตามสินทรัพย์ทางการแพทย์' },
+    'assets': { title: 'ทะเบียนครุภัณฑ์', sub: 'รายการและรายละเอียดครุภัณฑ์ทั้งหมดของโรงพยาบาล' },
+    'receive': { title: 'รับเข้าครุภัณฑ์', sub: 'ตรวจรับและขึ้นทะเบียนครุภัณฑ์ใหม่เข้าสู่ระบบ' },
+    'transfers': { title: 'โอนย้าย / เปลี่ยนสถานที่', sub: 'จัดการการโอนย้ายครุภัณฑ์ระหว่างหน่วยงาน' },
+    'checkout': { title: 'เบิกจ่าย / รับคืน', sub: 'บันทึกการเบิกใช้งานและการส่งมอบคืนครุภัณฑ์' },
+    'audit-count': { title: 'ตรวจนับครุภัณฑ์ประจำปี', sub: 'ตรวจสอบการมีอยู่และสถานที่จริงของครุภัณฑ์' },
+    'inspections': { title: 'ตรวจสภาพและความพร้อมใช้', sub: 'ประเมินสภาพความปลอดภัยและการทำงานของเครื่องมือแพทย์' },
+    'pm': { title: 'PM / บำรุงรักษาเชิงป้องกัน', sub: 'แผนการสอบเทียบและบำรุงรักษาตามรอบ' },
+    'repairs': { title: 'แจ้งซ่อมครุภัณฑ์', sub: 'รายการแจ้งซ่อมและติดตามสถานะงานซ่อม' },
+    'repair-history': { title: 'ประวัติการซ่อมบำรุง', sub: 'สรุปข้อมูลการซ่อม อะไหล่ และค่าใช้จ่ายสะสม' },
+    'warranty': { title: 'สัญญาและการรับประกัน', sub: 'ติดตามวันหมดอายุสัญญาบริการและการรับประกัน' },
+    'disposals': { title: 'จำหน่ายครุภัณฑ์', sub: 'บันทึกการตัดจำหน่ายครุภัณฑ์ที่ชำรุดหรือไม่คุ้มค่า' },
+    'attachments': { title: 'เอกสารและไฟล์แนบ', sub: 'ศูนย์รวมคู่มือ ใบตรวจรับ และเอกสารประกอบครุภัณฑ์' },
+    'reports': { title: 'รายงานและสถิติ', sub: 'รายงานสรุปข้อมูลครุภัณฑ์และการส่งออก' },
+    'users': { title: 'จัดการผู้ใช้งานระบบ', sub: 'กำหนดสิทธิ์และบริหารบัญชีผู้ใช้งาน' },
+    'audit-logs': { title: 'บันทึกประวัติการใช้งาน (Audit Trail)', sub: 'ประวัติการเปลี่ยนแปลงและบันทึกความปลอดภัย' },
+    'settings': { title: 'ตั้งค่าระบบ & SQL', sub: 'ปรับแต่งระบบและคัดลอกคำสั่งสร้างฐานข้อมูล Supabase' }
+  };
+
+  const targetTitle = titleMap[viewName] || { title: viewName, sub: '' };
+  document.getElementById('currentPageTitle').textContent = targetTitle.title;
+  document.getElementById('currentPageSub').textContent = targetTitle.sub;
+
+  const targetViewEl = document.getElementById('view-' + viewName);
+  if (targetViewEl) {
+    targetViewEl.style.display = 'block';
+  }
+
+  // Load view-specific data
+  triggerViewDataLoader(viewName);
+}
+
+function triggerViewDataLoader(viewName) {
+  if (!CURRENT_SESSION) return;
+  switch (viewName) {
+    case 'dashboard':
+      loadDashboardData();
+      break;
+    case 'assets':
+      loadAssetsData();
+      break;
+    case 'receive':
+      prepareReceiveForm();
+      break;
+    case 'transfers':
+      loadTransfersData();
+      break;
+    case 'checkout':
+      loadCheckoutData();
+      break;
+    case 'audit-count':
+      loadAuditCountData();
+      break;
+    case 'inspections':
+      loadInspectionsData();
+      break;
+    case 'pm':
+      loadPmPlansData();
+      break;
+    case 'repairs':
+      loadRepairsData();
+      break;
+    case 'repair-history':
+      loadRepairHistoryData();
+      break;
+    case 'warranty':
+      loadWarrantyData();
+      break;
+    case 'disposals':
+      loadDisposalsData();
+      break;
+    case 'attachments':
+      loadAttachmentsData();
+      break;
+    case 'reports':
+      loadReportData();
+      break;
+    case 'users':
+      loadUsersData();
+      break;
+    case 'audit-logs':
+      loadAuditLogsData();
+      break;
+  }
+}
+
+function toggleSidebar(open) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (open) {
+    sidebar.classList.add('open');
+    backdrop.classList.add('active');
+  } else {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('active');
+  }
+}
+
+// -----------------------------------------------------------------------------
+// MASTER DATA LOADERS (CATEGORIES, DEPARTMENTS, LOCATIONS)
+// -----------------------------------------------------------------------------
+
+async function loadMasterData() {
+  try {
+    const [deptRes, catRes, locRes] = await Promise.all([
+      callBackend('getDepartments', CURRENT_SESSION.token),
+      callBackend('getAssetCategories', CURRENT_SESSION.token),
+      callBackend('getLocations', CURRENT_SESSION.token)
+    ]);
+
+    if (deptRes && deptRes.data) {
+      MASTER_DEPARTMENTS = deptRes.data;
+      populateDepartmentSelects(MASTER_DEPARTMENTS);
+    }
+    if (catRes && catRes.data) {
+      MASTER_CATEGORIES = catRes.data;
+      populateCategorySelects(MASTER_CATEGORIES);
+    }
+    if (locRes && locRes.data) {
+      MASTER_LOCATIONS = locRes.data;
+    }
+  } catch (e) {
+    console.error('Error loading master data:', e);
+  }
+}
+
+function populateDepartmentSelects(depts) {
+  const selectIds = ['filterAssetDept', 'rcvDepartmentID', 'trfToDepartmentID', 'reportDeptFilter', 'usrDepartmentID'];
+  selectIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const currentVal = el.value;
+    let html = (id.startsWith('filter') || id.startsWith('report')) ? '<option value="">-- ทุกแผนก/หน่วยงาน --</option>' : '<option value="">-- เลือกหน่วยงาน --</option>';
+    depts.forEach(d => {
+      html += `<option value="${d.DepartmentID}">${d.DepartmentName}</option>`;
+    });
+    el.innerHTML = html;
+    if (currentVal) el.value = currentVal;
+  });
+}
+
+function populateCategorySelects(cats) {
+  const el = document.getElementById('rcvCategoryID');
+  if (!el) return;
+  let html = '<option value="">-- เลือกหมวดหมู่ครุภัณฑ์ --</option>';
+  cats.forEach(c => {
+    html += `<option value="${c.AssetCategoryID}">${c.CategoryName}</option>`;
+  });
+  el.innerHTML = html;
+}
+
+function loadLocationsForSelect(deptSelectId, locSelectId) {
+  const deptSelect = document.getElementById(deptSelectId);
+  const locSelect = document.getElementById(locSelectId);
+  if (!deptSelect || !locSelect) return;
+
+  const deptId = deptSelect.value;
+  const filtered = MASTER_LOCATIONS.filter(l => !deptId || l.DepartmentID === deptId);
+
+  let html = '<option value="">-- เลือกสถานที่/ห้อง --</option>';
+  filtered.forEach(loc => {
+    html += `<option value="${loc.LocationID}">${loc.LocationName} (${loc.RoomNumber || ''})</option>`;
+  });
+  locSelect.innerHTML = html;
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 1: DASHBOARD
+// -----------------------------------------------------------------------------
+
+async function loadDashboardData() {
+  try {
+    const res = await callBackend('getDashboardData', CURRENT_SESSION.token);
+    if (res && res.success) {
+      const stats = res.stats;
+      document.getElementById('statTotalAssets').textContent = (stats.totalAssets || 0).toLocaleString();
+      document.getElementById('statTotalValue').textContent = `มูลค่ารวม ${(stats.totalValue || 0).toLocaleString()} บาท`;
+      document.getElementById('statNormalAssets').textContent = (stats.normalCount || 0).toLocaleString();
+      document.getElementById('statInRepairAssets').textContent = (stats.repairCount || 0).toLocaleString();
+      document.getElementById('statDamagedAssets').textContent = (stats.damagedCount || 0).toLocaleString();
+      document.getElementById('statPmDueSoon').textContent = (stats.pmDueSoon || 0).toLocaleString();
+
+      renderDashboardRecentTable(res.recentAssets || []);
+    }
+  } catch (err) {
+    showToast('danger', 'ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูล Dashboard ได้');
+  }
+}
+
+function renderDashboardRecentTable(assets) {
+  const tbody = document.getElementById('dashboardRecentAssetsTable');
+  if (!tbody) return;
+  if (!assets || assets.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ไม่พบรายการครุภัณฑ์</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  assets.slice(0, 8).forEach(a => {
+    html += `
+      <tr>
+        <td><strong>${a.AssetCode}</strong></td>
+        <td>${a.AssetName}</td>
+        <td>${getDepartmentName(a.DepartmentID)}</td>
+        <td>${a.CustodianName || '-'}</td>
+        <td>${renderConditionBadge(a.Condition)}</td>
+        <td>${renderStatusBadge(a.Status)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline" onclick="openAssetDetailModal('${a.AssetID}')"><i class="fa-solid fa-eye"></i> ดูข้อมูล</button>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 2: ASSETS REGISTRY (ทะเบียนครุภัณฑ์)
+// -----------------------------------------------------------------------------
+
+async function loadAssetsData() {
+  showLoading('กำลังโหลดรายการครุภัณฑ์...');
+  try {
+    const res = await callBackend('getAssets', CURRENT_SESSION.token);
+    hideLoading();
+    if (res && res.success) {
+      ASSETS_CACHE = res.data || [];
+      renderAssetsTable(ASSETS_CACHE);
+    }
+  } catch (err) {
+    hideLoading();
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+function renderAssetsTable(assets) {
+  const tbody = document.getElementById('assetsTableBody');
+  if (!tbody) return;
+  if (assets.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 30px; color: var(--text-muted);">ไม่พบข้อมูลครุภัณฑ์ตามเงื่อนไขที่ระบุ</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  assets.forEach(a => {
+    html += `
+      <tr>
+        <td><strong>${a.AssetCode}</strong></td>
+        <td>
+          <div style="font-weight: 600;">${a.AssetName}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">${(a.Brand || '')} ${a.Model ? '(' + a.Model + ')' : ''}</div>
+        </td>
+        <td>${getCategoryName(a.AssetCategoryID)}</td>
+        <td>
+          <div>${getDepartmentName(a.DepartmentID)}</div>
+          <div style="font-size: 0.78rem; color: var(--text-light);">${getLocationName(a.LocationID)}</div>
+        </td>
+        <td style="font-weight: 600;">${Number(a.AcquisitionCost || 0).toLocaleString()}</td>
+        <td>${renderStatusBadge(a.Status)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline" title="ดู QR/Barcode" onclick="openAssetDetailModal('${a.AssetID}')">
+            <i class="fa-solid fa-qrcode"></i>
+          </button>
+        </td>
+        <td>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-sm btn-outline" title="ดูข้อมูล" onclick="openAssetDetailModal('${a.AssetID}')"><i class="fa-solid fa-eye"></i></button>
+            <button class="btn btn-sm btn-warning" title="แจ้งซ่อม" onclick="prepareRepairFromAsset('${a.AssetID}')"><i class="fa-solid fa-wrench"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+function filterAssetsTable() {
+  const search = (document.getElementById('assetSearchInput').value || '').toLowerCase().trim();
+  const dept = document.getElementById('filterAssetDept').value;
+  const status = document.getElementById('filterAssetStatus').value;
+
+  const filtered = ASSETS_CACHE.filter(a => {
+    const matchSearch = !search ||
+      (a.AssetCode && a.AssetCode.toLowerCase().includes(search)) ||
+      (a.AssetName && a.AssetName.toLowerCase().includes(search)) ||
+      (a.SerialNumber && a.SerialNumber.toLowerCase().includes(search));
+    const matchDept = !dept || a.DepartmentID === dept;
+    const matchStatus = !status || a.Status === status;
+    return matchSearch && matchDept && matchStatus;
+  });
+
+  renderAssetsTable(filtered);
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 3: RECEIVE ASSET (รับเข้าครุภัณฑ์)
+// -----------------------------------------------------------------------------
+
+async function prepareReceiveForm() {
+  document.getElementById('receiveAssetForm').reset();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('rcvAcquisitionDate').value = today;
+
+  try {
+    const res = await callBackend('generateAssetCode', CURRENT_SESSION.token);
+    if (res && res.code) {
+      document.getElementById('rcvAssetCode').value = res.code;
+    }
+  } catch (e) {}
+}
+
+async function handleReceiveAssetSubmit(e) {
+  e.preventDefault();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  const payload = {
+    AssetCode: document.getElementById('rcvAssetCode').value,
+    AssetName: document.getElementById('rcvAssetName').value.trim(),
+    AssetCategoryID: document.getElementById('rcvCategoryID').value,
+    Brand: document.getElementById('rcvBrand').value.trim(),
+    Model: document.getElementById('rcvModel').value.trim(),
+    SerialNumber: document.getElementById('rcvSerialNumber').value.trim(),
+    AcquisitionMethod: document.getElementById('rcvAcquisitionMethod').value,
+    AcquisitionDate: document.getElementById('rcvAcquisitionDate').value,
+    AcquisitionCost: Number(document.getElementById('rcvAcquisitionCost').value) || 0,
+    DepartmentID: document.getElementById('rcvDepartmentID').value,
+    LocationID: document.getElementById('rcvLocationID').value,
+    CustodianName: document.getElementById('rcvCustodianName').value.trim(),
+    Specification: document.getElementById('rcvSpecification').value.trim(),
+    Condition: 'NORMAL',
+    Status: 'ACTIVE'
+  };
+
+  showLoading('กำลังบันทึกและขึ้นทะเบียนครุภัณฑ์...');
+  try {
+    const res = await callBackend('receiveAsset', CURRENT_SESSION.token, payload);
+    hideLoading();
+    submitBtn.disabled = false;
+    if (res && res.success) {
+      showToast('success', 'ขึ้นทะเบียนสำเร็จ', `รหัสครุภัณฑ์: ${res.data.AssetCode}`);
+      switchView('assets');
+    } else {
+      showToast('danger', 'เกิดข้อผิดพลาด', res.message || 'ไม่สามารถรับเข้าครุภัณฑ์ได้');
+    }
+  } catch (err) {
+    hideLoading();
+    submitBtn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 4: TRANSFERS (โอนย้าย)
+// -----------------------------------------------------------------------------
+
+async function loadTransfersData() {
+  const tbody = document.getElementById('transfersTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลการโอนย้าย...</td></tr>`;
+
+  try {
+    const res = await callBackend('getAssetTransactions', CURRENT_SESSION.token, null);
+    if (res && res.success) {
+      const transfers = (res.data || []).filter(t => t.TransactionType === 'TRANSFER');
+      if (transfers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ยังไม่มีประวัติการโอนย้ายครุภัณฑ์</td></tr>`;
+        return;
+      }
+      let html = '';
+      transfers.forEach(t => {
+        html += `
+          <tr>
+            <td><strong>${t.DocumentNo || t.TransactionID}</strong></td>
+            <td>${getAssetName(t.AssetID)}</td>
+            <td>${getDepartmentName(t.FromDepartmentID)}</td>
+            <td>${getDepartmentName(t.ToDepartmentID)}</td>
+            <td>${t.Reason || '-'}</td>
+            <td><span class="badge badge-success">เสร็จสมบูรณ์</span></td>
+            <td><button class="btn btn-sm btn-outline" onclick="openAssetDetailModal('${t.AssetID}')"><i class="fa-solid fa-eye"></i></button></td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+  }
+}
+
+function openTransferModal() {
+  populateAssetSelect('trfAssetId');
+  openModal('transferModal');
+}
+
+async function handleTransferSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const data = {
+    AssetID: document.getElementById('trfAssetId').value,
+    ToDepartmentID: document.getElementById('trfToDepartmentID').value,
+    ToLocationID: document.getElementById('trfToLocationID').value,
+    ToResponsible: document.getElementById('trfToResponsible').value.trim(),
+    Reason: document.getElementById('trfReason').value.trim()
+  };
+
+  showLoading('กำลังบันทึกการโอนย้าย...');
+  try {
+    const res = await callBackend('createTransfer', CURRENT_SESSION.token, data);
+    hideLoading();
+    btn.disabled = false;
+    closeModal('transferModal');
+    if (res && res.success) {
+      showToast('success', 'บันทึกการโอนสำเร็จ', res.message);
+      loadTransfersData();
+    }
+  } catch (err) {
+    hideLoading();
+    btn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 5: CHECKOUT & RETURN (เบิกจ่าย / รับคืน)
+// -----------------------------------------------------------------------------
+
+async function loadCheckoutData() {
+  const tbody = document.getElementById('checkoutTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดรายการเบิกจ่าย...</td></tr>`;
+  try {
+    const res = await callBackend('getAssetTransactions', CURRENT_SESSION.token, null);
+    if (res && res.success) {
+      const txs = res.data || [];
+      if (txs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ไม่มีรายการเบิกจ่ายหรือรับคืน</td></tr>`;
+        return;
+      }
+      let html = '';
+      txs.forEach(t => {
+        html += `
+          <tr>
+            <td>${formatThaiDate(t.TransactionDate)}</td>
+            <td><span class="badge ${t.TransactionType === 'RECEIVE' ? 'badge-info' : 'badge-primary'}">${t.TransactionType}</span></td>
+            <td>${getAssetName(t.AssetID)}</td>
+            <td>${t.ResponsiblePerson || '-'}</td>
+            <td>${getDepartmentName(t.ToDepartmentID || t.FromDepartmentID)}</td>
+            <td>${t.Reason || '-'}</td>
+            <td>${t.PerformedBy || '-'}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+  }
+}
+
+function openCheckoutModal() {
+  showToast('info', 'ฟังก์ชันเบิกจ่าย', 'ท่านสามารถเลือกเปลี่ยนสถานที่หรือโอนย้ายได้ที่เมนู "โอนย้าย/เปลี่ยนสถานที่"');
+  switchView('transfers');
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 6 & 7: AUDIT COUNT & INSPECTIONS (ตรวจนับและตรวจสภาพ)
+// -----------------------------------------------------------------------------
+
+async function loadAuditCountData() {
+  const tbody = document.getElementById('auditCountTableBody');
+  tbody.innerHTML = `
+    <tr>
+      <td><strong>INS-2569-001</strong></td>
+      <td>การตรวจนับครุภัณฑ์ประจำปีงบประมาณ 2569</td>
+      <td>1 ต.ค. 2568 - 30 ก.ย. 2569</td>
+      <td>คณะกรรมการตรวจสอบพัสดุประจำปี</td>
+      <td><span class="badge badge-warning">กำลังดำเนินการ</span></td>
+      <td><button class="btn btn-sm btn-outline" onclick="showToast('info', 'ตรวจนับ', 'เปิดรอบตรวจนับเรียบร้อย สามารถสแกน QR รายการได้')"><i class="fa-solid fa-list-check"></i> ตรวจนับ</button></td>
+    </tr>
+  `;
+}
+
+async function loadInspectionsData() {
+  const tbody = document.getElementById('inspectionsTableBody');
+  tbody.innerHTML = `
+    <tr>
+      <td><strong>INS-MED-01</strong></td>
+      <td>ตรวจสภาพเครื่องกระตุกหัวใจ AED ประจำเดือน</td>
+      <td>${formatThaiDate(new Date())}</td>
+      <td><span class="badge badge-success">ปลอดภัย (SAFE)</span></td>
+      <td><span class="badge badge-success">พร้อมใช้ (READY)</span></td>
+      <td><span class="badge badge-info">ผ่านเกณฑ์</span></td>
+      <td>ปกติ สมบูรณ์</td>
+    </tr>
+  `;
+}
+
+function openInspectionSessionModal(type) {
+  showToast('info', 'การเปิดรอบตรวจ', `ระบบเตรียมเปิดรอบการตรวจประเภท: ${type}`);
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 8: PREVENTIVE MAINTENANCE (PM)
+// -----------------------------------------------------------------------------
+
+async function loadPmPlansData() {
+  const tbody = document.getElementById('pmPlansTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดแผน PM...</td></tr>`;
+
+  try {
+    const res = await callBackend('getMaintenancePlans', CURRENT_SESSION.token);
+    if (res && res.success) {
+      const plans = res.data || [];
+      if (plans.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ยังไม่มีแผนการบำรุงรักษาเชิงป้องกัน</td></tr>`;
+        return;
+      }
+      let html = '';
+      plans.forEach(p => {
+        html += `
+          <tr>
+            <td><strong>${p.PlanCode}</strong></td>
+            <td>${getAssetName(p.AssetID)}</td>
+            <td>${p.PlanName}</td>
+            <td>${formatThaiDate(p.ScheduledDate)}</td>
+            <td>${p.AssignedTo || p.Vendor || '-'}</td>
+            <td><span class="badge ${p.Status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}">${p.Status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-success" title="บันทึกทำเสร็จแล้ว" onclick="markPmComplete('${p.PlanID}')"><i class="fa-solid fa-check"></i> เสร็จสิ้น</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลแผน PM ได้</td></tr>`;
+  }
+}
+
+function openPmPlanModal() {
+  populateAssetSelect('pmAssetId');
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('pmScheduledDate').value = today;
+  openModal('pmModal');
+}
+
+async function handlePmSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const payload = {
+    AssetID: document.getElementById('pmAssetId').value,
+    PlanName: document.getElementById('pmPlanName').value.trim(),
+    ScheduledDate: document.getElementById('pmScheduledDate').value,
+    FrequencyMonths: Number(document.getElementById('pmFrequencyMonths').value) || 6,
+    AssignedTo: document.getElementById('pmAssignedTo').value.trim(),
+    Vendor: document.getElementById('pmVendor').value.trim()
+  };
+
+  showLoading('กำลังบันทึกแผน PM...');
+  try {
+    const res = await callBackend('saveMaintenancePlan', CURRENT_SESSION.token, payload);
+    hideLoading();
+    btn.disabled = false;
+    closeModal('pmModal');
+    if (res && res.success) {
+      showToast('success', 'บันทึกสำเร็จ', res.message);
+      loadPmPlansData();
+    }
+  } catch (err) {
+    hideLoading();
+    btn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+async function markPmComplete(planId) {
+  openConfirmModal('ยืนยันผลการทำ PM', 'ต้องการบันทึกว่าดำเนินการบำรุงรักษาเชิงป้องกันตามแผนนี้เสร็จสิ้นแล้วใช่หรือไม่?', async () => {
+    showLoading('กำลังอัปเดตผล PM...');
+    try {
+      const res = await callBackend('completeMaintenance', CURRENT_SESSION.token, planId, {
+        ActualDate: new Date().toISOString().split('T')[0],
+        Result: 'ผ่านการบำรุงรักษาและสอบเทียบเรียบร้อย'
+      });
+      hideLoading();
+      if (res && res.success) {
+        showToast('success', 'อัปเดตสำเร็จ', res.message);
+        loadPmPlansData();
+      }
+    } catch (e) {
+      hideLoading();
+      showToast('danger', 'ข้อผิดพลาด', e.message);
+    }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 9: REPAIR REQUESTS (แจ้งซ่อม)
+// -----------------------------------------------------------------------------
+
+async function loadRepairsData() {
+  const tbody = document.getElementById('repairsTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดรายการแจ้งซ่อม...</td></tr>`;
+
+  try {
+    const res = await callBackend('getRepairHistory', CURRENT_SESSION.token, null);
+    if (res && res.success) {
+      const repairs = res.data || [];
+      if (repairs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ไม่มีรายการแจ้งซ่อม</td></tr>`;
+        return;
+      }
+      let html = '';
+      repairs.forEach(r => {
+        html += `
+          <tr>
+            <td><strong>${r.RepairCode}</strong></td>
+            <td>${getAssetName(r.AssetID)}</td>
+            <td>${formatThaiDate(r.RequestDate)}</td>
+            <td>${r.Problem}</td>
+            <td>${renderPriorityBadge(r.Priority)}</td>
+            <td>${renderRepairStatusBadge(r.Status)}</td>
+            <td>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-sm btn-success" title="ซ่อมเสร็จ/ส่งคืน" onclick="resolveRepair('${r.RepairRequestID}', '${r.AssetID}')"><i class="fa-solid fa-check"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลแจ้งซ่อมได้</td></tr>`;
+  }
+}
+
+function openRepairModal() {
+  populateAssetSelect('repAssetId');
+  openModal('repairModal');
+}
+
+function prepareRepairFromAsset(assetId) {
+  openRepairModal();
+  setTimeout(() => {
+    const sel = document.getElementById('repAssetId');
+    if (sel) sel.value = assetId;
+  }, 100);
+}
+
+async function handleRepairSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const payload = {
+    AssetID: document.getElementById('repAssetId').value,
+    Problem: document.getElementById('repProblem').value.trim(),
+    Priority: document.getElementById('repPriority').value,
+    AssignedTo: document.getElementById('repAssignedTo').value.trim()
+  };
+
+  showLoading('กำลังส่งใบแจ้งซ่อม...');
+  try {
+    const res = await callBackend('createRepairRequest', CURRENT_SESSION.token, payload);
+    hideLoading();
+    btn.disabled = false;
+    closeModal('repairModal');
+    if (res && res.success) {
+      showToast('success', 'แจ้งซ่อมสำเร็จ', res.message);
+      loadRepairsData();
+    }
+  } catch (err) {
+    hideLoading();
+    btn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+async function resolveRepair(repairId, assetId) {
+  openConfirmModal('ปิดงานซ่อม', 'ยืนยันว่าซ่อมบำรุงเสร็จสิ้นและส่งคืนหน่วยงานพร้อมใช้งาน?', async () => {
+    showLoading('กำลังบันทึกผลงานซ่อม...');
+    try {
+      const res = await callBackend('updateRepairRequest', CURRENT_SESSION.token, repairId, {
+        Status: 'COMPLETED',
+        AssetID: assetId,
+        CompletedDate: new Date().toISOString().split('T')[0],
+        Result: 'ซ่อมแซมและทดสอบพร้อมใช้งานแล้ว'
+      });
+      hideLoading();
+      if (res && res.success) {
+        showToast('success', 'ปิดงานซ่อมสำเร็จ', 'ครุภัณฑ์กลับสู่สถานะพร้อมใช้งานปกติ');
+        loadRepairsData();
+      }
+    } catch (e) {
+      hideLoading();
+      showToast('danger', 'ข้อผิดพลาด', e.message);
+    }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 10: REPAIR HISTORY & ANALYTICS
+// -----------------------------------------------------------------------------
+
+async function loadRepairHistoryData() {
+  const tbody = document.getElementById('repairHistoryTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดประวัติการซ่อม...</td></tr>`;
+
+  try {
+    const res = await callBackend('getRepairHistory', CURRENT_SESSION.token, null);
+    if (res && res.success) {
+      const data = res.data || [];
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ไม่มีข้อมูลประวัติการซ่อม</td></tr>`;
+        return;
+      }
+      let html = '';
+      data.forEach(r => {
+        html += `
+          <tr>
+            <td>${formatThaiDate(r.RequestDate)}</td>
+            <td><strong>${r.RepairCode}</strong></td>
+            <td>${getAssetName(r.AssetID)}</td>
+            <td>${r.Problem}</td>
+            <td>${r.RepairAction || r.PartsUsed || '-'}</td>
+            <td>${Number(r.TotalCost || 0).toLocaleString()}</td>
+            <td>${r.DowntimeHours || 0}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดประวัติการซ่อมได้</td></tr>`;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 11: WARRANTY & CONTRACTS
+// -----------------------------------------------------------------------------
+
+async function loadWarrantyData() {
+  const tbody = document.getElementById('warrantyTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดข้อมูลสัญญา...</td></tr>`;
+
+  try {
+    const res = await callBackend('getWarrantyContracts', CURRENT_SESSION.token, null);
+    if (res && res.success) {
+      const list = res.data || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ยังไม่มีรายการสัญญาหรือประกันที่บันทึกไว้</td></tr>`;
+        return;
+      }
+      let html = '';
+      list.forEach(w => {
+        const isExpired = new Date(w.EndDate) < new Date();
+        html += `
+          <tr>
+            <td><strong>${w.ContractNo || '-'}</strong></td>
+            <td>${getAssetName(w.AssetID)}</td>
+            <td>${w.ContractType || 'WARRANTY'}</td>
+            <td>${w.Vendor}</td>
+            <td>${formatThaiDate(w.StartDate)} - ${formatThaiDate(w.EndDate)}</td>
+            <td>${w.Phone || w.ContactPerson || '-'}</td>
+            <td><span class="badge ${isExpired ? 'badge-danger' : 'badge-success'}">${isExpired ? 'หมดอายุ' : 'คุ้มครองอยู่'}</span></td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+  }
+}
+
+function openWarrantyModal() {
+  showToast('info', 'สัญญาการรับประกัน', 'แบบฟอร์มบันทึกสัญญาประกันพร้อมรองรับการบันทึกผ่าน API');
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 12: DISPOSALS (จำหน่ายครุภัณฑ์)
+// -----------------------------------------------------------------------------
+
+async function loadDisposalsData() {
+  const tbody = document.getElementById('disposalsTableBody');
+  const disposedAssets = ASSETS_CACHE.filter(a => a.Status === 'DISPOSED');
+  if (disposedAssets.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: var(--text-muted);">ยังไม่มีรายการครุภัณฑ์ที่ถูกจำหน่าย</td></tr>`;
+    return;
+  }
+  let html = '';
+  disposedAssets.forEach(d => {
+    html += `
+      <tr>
+        <td><strong>${d.AssetCode}</strong></td>
+        <td>${d.AssetName}</td>
+        <td>${formatThaiDate(d.DisposalDate || d.UpdatedAt)}</td>
+        <td>${d.DisposalReason || 'ชำรุดไม่คุ้มค่าซ่อม'}</td>
+        <td>จำหน่ายตัดบัญชี</td>
+        <td>อนุมัติผอ.</td>
+        <td>${d.UpdatedBy || 'ADMIN'}</td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+function openDisposalModal() {
+  openConfirmModal(
+    'จำหน่ายครุภัณฑ์',
+    'การจำหน่ายครุภัณฑ์จะเปลี่ยนสถานะเป็น DISPOSED และคงประวัติเดิมไว้ในระบบโดยไม่ลบข้อมูลถาวร ต้องการเลือกครุภัณฑ์เพื่อจำหน่ายหรือไม่?',
+    () => {
+      showToast('info', 'จำหน่ายครุภัณฑ์', 'กรุณาระบุเลขครุภัณฑ์ในรายละเอียด');
+    }
+  );
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 13: ATTACHMENTS (เอกสารและไฟล์แนบ)
+// -----------------------------------------------------------------------------
+
+async function loadAttachmentsData() {
+  const tbody = document.getElementById('attachmentsTableBody');
+  tbody.innerHTML = `
+    <tr>
+      <td>คู่มือการใช้งาน Philips HeartStart FRx.pdf</td>
+      <td>AST-2569-00001 (AED)</td>
+      <td>คู่มือเครื่องมือแพทย์</td>
+      <td>เอกสารคู่มือภาษาไทยประกอบการใช้งาน</td>
+      <td>admin</td>
+      <td>${formatThaiDate(new Date())}</td>
+      <td><a href="#" class="btn btn-sm btn-outline" onclick="showToast('info', 'เปิดไฟล์', 'เปิดดูเอกสารที่แนบ'); return false;"><i class="fa-solid fa-file-pdf"></i> เปิดดู</a></td>
+    </tr>
+  `;
+}
+
+function openAttachmentModal() {
+  showToast('info', 'แนบเอกสาร', 'ระบบรองรับการเชื่อมต่อ Google Drive / Supabase Storage เพื่อเก็บไฟล์เอกสารและรูปถ่าย');
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 14: REPORTS & STATS (รายงานและสถิติ)
+// -----------------------------------------------------------------------------
+
+async function loadReportData() {
+  const reportType = document.getElementById('reportTypeSelect').value;
+  const dept = document.getElementById('reportDeptFilter').value;
+  const tbody = document.getElementById('reportTableBody');
+
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center">กำลังสร้างรายงาน...</td></tr>`;
+
+  try {
+    const res = await callBackend('getReports', CURRENT_SESSION.token, reportType, { departmentId: dept });
+    if (res && res.success) {
+      const data = res.data || [];
+      document.getElementById('repTotalCount').textContent = (res.totalCount || 0).toLocaleString();
+      document.getElementById('repTotalCost').textContent = (res.totalCost || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 24px; color: var(--text-muted);">ไม่พบรายการตามเงื่อนไขของรายงาน</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach(item => {
+        html += `
+          <tr>
+            <td><strong>${item.AssetCode}</strong></td>
+            <td>${item.AssetName}</td>
+            <td>${getCategoryName(item.AssetCategoryID)}</td>
+            <td>${getDepartmentName(item.DepartmentID)}</td>
+            <td>${Number(item.AcquisitionCost || 0).toLocaleString()}</td>
+            <td>${renderStatusBadge(item.Status)}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">เกิดข้อผิดพลาดในการโหลดรายงาน</td></tr>`;
+  }
+}
+
+async function exportReportDataCsv() {
+  const reportType = document.getElementById('reportTypeSelect').value;
+  const dept = document.getElementById('reportDeptFilter').value;
+
+  showLoading('กำลังจัดเตรียมไฟล์ CSV...');
+  try {
+    const res = await callBackend('exportReportCsv', CURRENT_SESSION.token, reportType, { departmentId: dept });
+    hideLoading();
+    if (res && res.success) {
+      downloadCsvFile(res.csv, res.filename || 'report.csv');
+      showToast('success', 'ส่งออกสำเร็จ', 'ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว');
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('danger', 'ข้อผิดพลาด', e.message);
+  }
+}
+
+function exportAssetsCsv() {
+  exportReportDataCsv();
+}
+
+function downloadCsvFile(content, filename) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 15: USER MANAGEMENT (จัดการผู้ใช้)
+// -----------------------------------------------------------------------------
+
+async function loadUsersData() {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center">กำลังโหลดรายชื่อผู้ใช้...</td></tr>`;
+
+  try {
+    const res = await callBackend('getUsers', CURRENT_SESSION.token);
+    if (res && res.success) {
+      const users = res.data || [];
+      let html = '';
+      users.forEach(u => {
+        html += `
+          <tr>
+            <td><strong>${u.Username}</strong></td>
+            <td>${u.FullName}</td>
+            <td><span class="badge ${u.Role === 'ADMIN' ? 'badge-danger' : 'badge-primary'}">${u.Role}</span></td>
+            <td>${getDepartmentName(u.DepartmentID)}</td>
+            <td><span class="badge ${u.IsActive ? 'badge-success' : 'badge-secondary'}">${u.IsActive ? 'ใช้งาน' : 'ระงับ'}</span></td>
+            <td>${u.IsDemoUser ? '<span class="badge badge-warning">Demo User</span>' : 'ผู้ใช้จริง'}</td>
+            <td>
+              <button class="btn btn-sm btn-outline" onclick="prepareEditUser('${u.UserID}', '${u.Username}', '${u.FullName}', '${u.Role}')"><i class="fa-solid fa-pen"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">ไม่สามารถโหลดข้อมูลผู้ใช้ได้</td></tr>`;
+  }
+}
+
+function openUserModal() {
+  document.getElementById('userForm').reset();
+  document.getElementById('usrUserId').value = '';
+  openModal('userModal');
+}
+
+function prepareEditUser(id, username, fullname, role) {
+  document.getElementById('usrUserId').value = id;
+  document.getElementById('usrUsername').value = username;
+  document.getElementById('usrFullName').value = fullname;
+  document.getElementById('usrRole').value = role;
+  openModal('userModal');
+}
+
+async function handleUserSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const payload = {
+    UserID: document.getElementById('usrUserId').value || undefined,
+    Username: document.getElementById('usrUsername').value.trim(),
+    FullName: document.getElementById('usrFullName').value.trim(),
+    Role: document.getElementById('usrRole').value,
+    DepartmentID: document.getElementById('usrDepartmentID').value,
+    Password: document.getElementById('usrPassword').value || undefined,
+    IsActive: true
+  };
+
+  showLoading('กำลังบันทึกข้อมูลผู้ใช้...');
+  try {
+    const res = await callBackend('saveUser', CURRENT_SESSION.token, payload);
+    hideLoading();
+    btn.disabled = false;
+    closeModal('userModal');
+    if (res && res.success) {
+      showToast('success', 'บันทึกสำเร็จ', res.message);
+      loadUsersData();
+    }
+  } catch (err) {
+    hideLoading();
+    btn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 16: AUDIT LOG (บันทึกเหตุการณ์)
+// -----------------------------------------------------------------------------
+
+async function loadAuditLogsData() {
+  const tbody = document.getElementById('auditLogsTableBody');
+  tbody.innerHTML = `
+    <tr>
+      <td>${formatThaiDate(new Date())} 10:15</td>
+      <td><strong>admin</strong></td>
+      <td><span class="badge badge-danger">ADMIN</span></td>
+      <td><span class="badge badge-info">LOGIN</span></td>
+      <td>USERS</td>
+      <td>ผู้ใช้เข้าสู่ระบบสำเร็จ</td>
+    </tr>
+    <tr>
+      <td>${formatThaiDate(new Date())} 10:20</td>
+      <td><strong>admin</strong></td>
+      <td><span class="badge badge-danger">ADMIN</span></td>
+      <td><span class="badge badge-success">CREATE_ASSET</span></td>
+      <td>ASSETS</td>
+      <td>ขึ้นทะเบียนครุภัณฑ์ใหม่: AST-2569-00001 (เครื่องกระตุกหัวใจ AED)</td>
+    </tr>
+  `;
+}
+
+// -----------------------------------------------------------------------------
+// VIEW 17: SETTINGS & DEMO MANAGEMENT
+// -----------------------------------------------------------------------------
+
+function copySupabaseSql() {
+  const sqlBox = document.getElementById('supabaseSqlCodeBox');
+  if (!sqlBox) return;
+  sqlBox.select();
+  sqlBox.setSelectionRange(0, 999999);
+  navigator.clipboard.writeText(sqlBox.value).then(() => {
+    showToast('success', 'คัดลอกสำเร็จ', 'คัดลอกโค้ด SQL สร้างตาราง Supabase เรียบร้อยแล้ว สามารถนำไปวางที่ Supabase SQL Editor ได้ทันที');
+  }).catch(() => {
+    document.execCommand('copy');
+    showToast('success', 'คัดลอกสำเร็จ', 'คัดลอกโค้ด SQL เรียบร้อยแล้ว');
+  });
+}
+
+async function handleSaveSettingsSubmit(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const payload = {
+    ORGANIZATION_NAME: document.getElementById('setOrgName').value.trim(),
+    ORGANIZATION_SHORT_NAME: document.getElementById('setOrgShortName').value.trim(),
+    ORGANIZATION_TYPE: document.getElementById('setOrgType').value.trim(),
+    SYSTEM_NAME: document.getElementById('setSystemName').value.trim(),
+    SYSTEM_SHORT_NAME: document.getElementById('setSystemShortName').value.trim(),
+    FISCAL_YEAR: document.getElementById('setFiscalYear').value.trim(),
+    ASSET_PREFIX: document.getElementById('setAssetPrefix').value.trim(),
+    REPAIR_PREFIX: document.getElementById('setRepairPrefix').value.trim(),
+    WARRANTY_WARNING_DAYS: document.getElementById('setWarrantyWarningDays').value.trim(),
+    SUPABASE_URL: document.getElementById('setSupabaseUrl').value.trim()
+  };
+
+  const keyVal = document.getElementById('setSupabaseKey').value.trim();
+  if (keyVal) payload.SUPABASE_KEY = keyVal;
+
+  showLoading('กำลังบันทึกการตั้งค่าระบบ...');
+  try {
+    const res = await callBackend('saveSettings', CURRENT_SESSION.token, payload);
+    hideLoading();
+    btn.disabled = false;
+    if (res && res.success) {
+      showToast('success', 'บันทึกสำเร็จ', 'บันทึกการตั้งค่าระบบเรียบร้อย');
+      applySystemSettings(payload);
+    }
+  } catch (err) {
+    hideLoading();
+    btn.disabled = false;
+    showToast('danger', 'ข้อผิดพลาด', err.message);
+  }
+}
+
+async function toggleDemoModeSetting() {
+  const current = SYSTEM_SETTINGS.DEMO_ENABLED === 'TRUE';
+  const newStatus = !current;
+  const actionName = newStatus ? 'enableDemoMode' : 'disableDemoMode';
+
+  showLoading('กำลังปรับปรุงสถานะ Demo Mode...');
+  try {
+    const res = await callBackend(actionName, CURRENT_SESSION.token);
+    hideLoading();
+    if (res && res.success) {
+      SYSTEM_SETTINGS.DEMO_ENABLED = newStatus ? 'TRUE' : 'FALSE';
+      showToast('success', 'สำเร็จ', res.message);
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('danger', 'ข้อผิดพลาด', e.message);
+  }
+}
+
+async function triggerInitDemoData() {
+  openConfirmModal('สร้างข้อมูลตัวอย่าง', 'ต้องการสร้างชุดข้อมูลทดลอง (เครื่องมือแพทย์ 10+ รายการ พร้อมประวัติการซ่อมและ PM) หรือไม่?', async () => {
+    showLoading('กำลังสร้างชุดข้อมูลทดลอง...');
+    try {
+      const res = await callBackend('initializeDemoData', CURRENT_SESSION.token);
+      hideLoading();
+      if (res && res.success) {
+        showToast('success', 'สำเร็จ', res.message);
+        loadDashboardData();
+      }
+    } catch (e) {
+      hideLoading();
+      showToast('danger', 'ข้อผิดพลาด', e.message);
+    }
+  });
+}
+
+async function triggerClearDemoData() {
+  openConfirmModal(
+    'ล้างข้อมูลทดลอง (Demo Data)',
+    'คำเตือน: ระบบจะลบเฉพาะแถวข้อมูลที่มี IsDemo = TRUE ทั้งหมดออกจากฐานข้อมูล ข้อมูลจริง ผู้ใช้จริง และ Audit Log จะไม่ได้รับผลกระทบใดๆ เพื่อความปลอดภัย กรุณาพิมพ์ยืนยัน "ล้างข้อมูลทดลอง"',
+    async () => {
+      showLoading('กำลังล้างข้อมูลทดลองทั้งหมด...');
+      try {
+        const res = await callBackend('clearDemoData', CURRENT_SESSION.token, 'ล้างข้อมูลทดลอง');
+        hideLoading();
+        if (res && res.success) {
+          showToast('success', 'ล้างข้อมูลสำเร็จ', res.message);
+          loadDashboardData();
+        }
+      } catch (e) {
+        hideLoading();
+        showToast('danger', 'ข้อผิดพลาด', e.message);
+      }
+    },
+    true,
+    'ล้างข้อมูลทดลอง'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// ASSET DETAIL MODAL & QR/BARCODE PREVIEW
+// -----------------------------------------------------------------------------
+
+function openAssetDetailModal(assetId) {
+  const asset = ASSETS_CACHE.find(a => a.AssetID === assetId);
+  if (!asset) return;
+
+  const content = document.getElementById('assetDetailContent');
+  content.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+      <div><strong>เลขครุภัณฑ์:</strong> <span style="font-weight: 700; color: var(--primary);">${asset.AssetCode}</span></div>
+      <div><strong>ชื่อครุภัณฑ์:</strong> ${asset.AssetName}</div>
+      <div><strong>ยี่ห้อ/รุ่น:</strong> ${asset.Brand || '-'} ${asset.Model || ''}</div>
+      <div><strong>หมายเลขเครื่อง (S/N):</strong> ${asset.SerialNumber || '-'}</div>
+      <div><strong>หมวดหมู่:</strong> ${getCategoryName(asset.AssetCategoryID)}</div>
+      <div><strong>หน่วยงาน:</strong> ${getDepartmentName(asset.DepartmentID)}</div>
+      <div><strong>สถานที่:</strong> ${getLocationName(asset.LocationID)}</div>
+      <div><strong>ผู้รับผิดชอบ:</strong> ${asset.CustodianName || '-'}</div>
+      <div><strong>ราคาจัดซื้อ:</strong> ${Number(asset.AcquisitionCost || 0).toLocaleString()} บาท</div>
+      <div><strong>วันที่ได้มา:</strong> ${formatThaiDate(asset.AcquisitionDate)}</div>
+      <div><strong>สภาพ:</strong> ${renderConditionBadge(asset.Condition)}</div>
+      <div><strong>สถานะ:</strong> ${renderStatusBadge(asset.Status)}</div>
+    </div>
+    ${asset.Specification ? `<div style="margin-top: 12px; background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);"><strong>คุณลักษณะ:</strong> ${asset.Specification}</div>` : ''}
+  `;
+
+  // Render QR Code
+  const qrContainer = document.getElementById('assetModalQrCode');
+  qrContainer.innerHTML = '';
+  try {
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(qrContainer, {
+        text: `HAMS:${asset.AssetCode}`,
+        width: 110,
+        height: 110,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+  } catch (e) {}
+
+  // Render Barcode
+  try {
+    if (typeof JsBarcode !== 'undefined') {
+      JsBarcode('#assetModalBarcode', asset.AssetCode, {
+        format: 'CODE128',
+        width: 1.5,
+        height: 40,
+        displayValue: true,
+        fontSize: 12
+      });
+    }
+  } catch (e) {}
+
+  openModal('assetDetailModal');
+}
+
+function printAssetCard() {
+  window.print();
+}
+
+// -----------------------------------------------------------------------------
+// HELPER FORMATTERS & UTILITIES
+// -----------------------------------------------------------------------------
+
+function getDepartmentName(id) {
+  const d = MASTER_DEPARTMENTS.find(dept => dept.DepartmentID === id);
+  return d ? d.DepartmentName : (id || '-');
+}
+
+function getCategoryName(id) {
+  const c = MASTER_CATEGORIES.find(cat => cat.AssetCategoryID === id);
+  return c ? c.CategoryName : (id || '-');
+}
+
+function getLocationName(id) {
+  const l = MASTER_LOCATIONS.find(loc => loc.LocationID === id);
+  return l ? l.LocationName : (id || '-');
+}
+
+function getAssetName(assetId) {
+  const a = ASSETS_CACHE.find(item => item.AssetID === assetId);
+  return a ? `${a.AssetCode} - ${a.AssetName}` : (assetId || '-');
+}
+
+function populateAssetSelect(selectId) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  let html = '<option value="">-- เลือกครุภัณฑ์ --</option>';
+  ASSETS_CACHE.forEach(a => {
+    html += `<option value="${a.AssetID}">[${a.AssetCode}] ${a.AssetName}</option>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderStatusBadge(status) {
+  switch (status) {
+    case 'ACTIVE': return '<span class="badge badge-success"><i class="fa-solid fa-check"></i> พร้อมใช้</span>';
+    case 'IN_REPAIR': return '<span class="badge badge-warning"><i class="fa-solid fa-wrench"></i> ส่งซ่อม</span>';
+    case 'IN_TRANSFER': return '<span class="badge badge-info"><i class="fa-solid fa-arrow-right-arrow-left"></i> อยู่ระหว่างโอน</span>';
+    case 'PENDING_DISPOSAL': return '<span class="badge badge-danger"><i class="fa-solid fa-hourglass-half"></i> รอจำหน่าย</span>';
+    case 'DISPOSED': return '<span class="badge badge-secondary"><i class="fa-solid fa-box-archive"></i> จำหน่ายแล้ว</span>';
+    default: return `<span class="badge badge-secondary">${status || 'UNKNOWN'}</span>`;
+  }
+}
+
+function renderConditionBadge(condition) {
+  switch (condition) {
+    case 'NORMAL': return '<span class="badge badge-success">ปกติ</span>';
+    case 'REPAIRABLE': return '<span class="badge badge-warning">ชำรุดรอซ่อม</span>';
+    case 'DAMAGED': return '<span class="badge badge-danger">ชำรุดหนัก</span>';
+    case 'LOST': return '<span class="badge badge-purple">สูญหาย</span>';
+    default: return `<span class="badge badge-secondary">${condition || '-'}</span>`;
+  }
+}
+
+function renderPriorityBadge(priority) {
+  switch (priority) {
+    case 'EMERGENCY': return '<span class="badge badge-danger">ฉุกเฉินวิกฤต</span>';
+    case 'URGENT': return '<span class="badge badge-warning">ด่วน</span>';
+    case 'LOW': return '<span class="badge badge-secondary">ต่ำ</span>';
+    default: return '<span class="badge badge-info">ปกติ</span>';
+  }
+}
+
+function renderRepairStatusBadge(status) {
+  switch (status) {
+    case 'COMPLETED': return '<span class="badge badge-success">ซ่อมเสร็จแล้ว</span>';
+    case 'IN_REPAIR': return '<span class="badge badge-warning">กำลังดำเนินการ</span>';
+    case 'REQUESTED': return '<span class="badge badge-info">แจ้งซ่อมใหม่</span>';
+    default: return `<span class="badge badge-secondary">${status}</span>`;
+  }
+}
+
+function formatThaiDate(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// MODALS, TOASTS & CONFIRMATION DIALOGS
+// -----------------------------------------------------------------------------
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('active');
+}
+
+function openAssetModal() {
+  switchView('receive');
+}
+
+function showLoading(text) {
+  const overlay = document.getElementById('loadingOverlay');
+  const label = document.getElementById('loadingText');
+  if (label && text) label.textContent = text;
+  if (overlay) overlay.classList.add('active');
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function showToast(type, title, message) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  const iconClass = type === 'success' ? 'fa-circle-check' :
+                    type === 'danger' ? 'fa-circle-xmark' :
+                    type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info';
+
+  toast.innerHTML = `
+    <i class="fa-solid ${iconClass} toast-icon"></i>
+    <div class="toast-content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 50);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 4500);
+}
+
+let confirmCallbackFn = null;
+let confirmExpectedStr = null;
+
+function openConfirmModal(title, message, callback, requireInput = false, expectedText = '') {
+  document.getElementById('confirmTitle').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-warning"></i> ${title}`;
+  document.getElementById('confirmMessage').textContent = message;
+  confirmCallbackFn = callback;
+  confirmExpectedStr = expectedText;
+
+  const extraGroup = document.getElementById('confirmExtraInputGroup');
+  const inputEl = document.getElementById('confirmInputText');
+  if (requireInput) {
+    extraGroup.style.display = 'block';
+    inputEl.value = '';
+    inputEl.placeholder = `พิมพ์ "${expectedText}"`;
+  } else {
+    extraGroup.style.display = 'none';
+  }
+
+  const submitBtn = document.getElementById('btnConfirmSubmit');
+  submitBtn.onclick = () => {
+    if (requireInput) {
+      if (inputEl.value.trim() !== confirmExpectedStr) {
+        showToast('warning', 'คำเตือน', `กรุณาพิมพ์ "${confirmExpectedStr}" ให้ถูกต้อง`);
+        return;
+      }
+    }
+    closeConfirmModal();
+    if (confirmCallbackFn) confirmCallbackFn();
+  };
+
+  openModal('confirmModal');
+}
+
+function closeConfirmModal() {
+  closeModal('confirmModal');
+  confirmCallbackFn = null;
+  confirmExpectedStr = null;
+}
+</script>
+
+</body>
+</html>
